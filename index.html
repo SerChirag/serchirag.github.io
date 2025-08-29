@@ -53,6 +53,57 @@
           </tbody></table>
           <table style="width:100%;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody>
 
+    <tr onmouseout="gmc_stop()" onmouseover="gmc_start()" bgcolor="#ffffd0">
+      <td style="padding:16px;width:20%;vertical-align:middle">
+        <div class="one">
+          <div class="two" id='gmc_image'><video  width=100% muted autoplay loop>
+          <source src="pub/gmc/ball.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+          </video></div>
+          <img src='pub/gmc/ball.png' width=100%>
+        </div>
+        <script type="text/javascript">
+          function gmc_start() {
+            document.getElementById('gmc_image').style.opacity = "1";
+          }
+
+          function gmc_stop() {
+            document.getElementById('gmc_image').style.opacity = "0";
+          }
+          gmc_stop()
+        </script>
+      </td>
+      <td style="padding:8px;width:80%;vertical-align:middle">
+        <a href="https://junrul.github.io/gmc/" target="_blank">
+          <span class="papertitle">Global Motion Corresponder for 3D Point-Based Scene Interpolation under Large Motion</span>
+        </a>
+        <br>
+				
+        <a target="_blank" href="https://junrul.github.io/">Junru Lin <sup>*</sup></a>,
+				<strong>Chirag Vashist <sup>*</sup></strong>,
+        <a target="_blank" href="https://mikacuy.github.io/">Mikaela Angelina Uy</a>,
+        <a target="_blank" href="https://coltonstearns.github.io/">Colton Stearns</a>,
+        <a target="_blank" href="https://roxanneluo.github.io/">Xuan Luo</a>,
+        <a target="_blank" href="https://geometry.stanford.edu/?member=guibas">Leonidas Guibas</a>,
+        <a target="_blank" href="https://www.sfu.ca/~keli/">Ke Li</a>
+        <br>
+        <em>ICCV</em> 2025
+        <br>
+        <a target="_blank" href="https://junrul.github.io/gmc/">project page</a>
+        /
+        <!-- <a target="_blank" href="https://arxiv.org/abs/2409.17439">arXiv</a> -->
+        <!-- / -->
+        <!-- <a target="_blank" href="https://www.youtube.com/watch?v=TIXEiqfm-Bw">video</a> -->
+        <!-- / -->
+        <a target="_blank" href="https://junrul.github.io/gmc/">code</a>
+        <p></p>
+        <p>
+          Existing 3D scene interpolation methods fail when the scene undergoes large global motion. 
+		      To address this, we propose a novel approach that robustly handles such motions by learning smooth global correspondences in a canonical space
+        </p>
+      </td>
+    </tr>
+    
 
     <tr onmouseout="rsimle_stop()" onmouseover="rsimle_start()" bgcolor="#ffffd0">
       <td style="padding:16px;width:20%;vertical-align:middle">
@@ -84,7 +135,7 @@
         <a target="_blank" href="https://sites.google.com/view/niopeng/home">Shichong Peng</a>,
         <a target="_blank" href="https://www.sfu.ca/~keli/">Ke Li</a>
         <br>
-        <em>ECCV</em>, 2024
+        <em>ECCV</em> 2024
         <br>
         <a target="_blank" href="https://serchirag.github.io/rs-imle/">project page</a>
         /
