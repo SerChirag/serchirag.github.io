@@ -27,7 +27,7 @@ latest_posts:
   limit: 3 # leave blank to include all the blog posts
 ---
 
-Hello There! My name is Chirag Vashist. I am a Ph.D. candidate at Simon Fraser University, Burnaby. I am affiliated with [APEX Lab](https://sfuapex.com/).
+Hello There! My name is Chirag Vashist. I am a Ph.D. candidate at Simon Fraser University, Burnaby. I am affiliated with [APEX Lab](https://sfuapex.com/) and I am advised by [Dr. Ke Li](https://www.sfu.ca/~keli/).
 
 Before this, I worked as a Software Engineer at Microsoft in the domain of [Digital Security and Risk](https://github.com/azsk/AzTS-docs). I received my B.Tech. Honors degree in Computer Science from [Indian Institute of Technology, Mandi](https://www.iitmandi.ac.in/schools/SCEE).
 
