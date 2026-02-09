@@ -1,12 +1,12 @@
 metadata:
-  last_updated: '2026-01-19'
+  last_updated: '2026-02-09'
 papers:
   IESBWC0AAAAJ:IjCSPb-OGe4C:
     citations: 0
     title: Global Motion Corresponder for 3D Point-Based Scene Interpolation under Large Motion
     year: '2025'
   IESBWC0AAAAJ:UeHWp8X0CEIC:
-    citations: 4
+    citations: 5
     title: 'Rejection sampling imle: Designing priors for better few-shot image synthesis'
     year: '2024'
   IESBWC0AAAAJ:qjMakFHDy7sC:
