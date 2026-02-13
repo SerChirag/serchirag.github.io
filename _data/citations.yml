@@ -1,5 +1,5 @@
 metadata:
-  last_updated: '2026-02-09'
+  last_updated: '2026-02-13'
 papers:
   IESBWC0AAAAJ:IjCSPb-OGe4C:
     citations: 0
@@ -10,7 +10,7 @@ papers:
     title: 'Rejection sampling imle: Designing priors for better few-shot image synthesis'
     year: '2024'
   IESBWC0AAAAJ:qjMakFHDy7sC:
-    citations: 20
+    citations: 21
     title: A generic framework for deep incremental cancelable template generation
     year: '2022'
   IESBWC0AAAAJ:u-x6o8ySG0sC:
