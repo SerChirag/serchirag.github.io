@@ -4,20 +4,18 @@
 @string{aps = {American Physical Society,}}
 
 
-@article{vashist2024rejectionsamplingimledesigning,
-      title={Rejection Sampling IMLE: Designing Priors for Better Few-Shot Image Synthesis}, 
-      author={Chirag Vashist and Shichong Peng and Ke Li},
-      journal = {ECCV},
-      year={2024},
-      abstract={We identity an issue with the current IMLE-based methods and propose a novel approach to address it. We achieve <b>state-of-the-art</b> performance on few-shot image generation tasks.},
-      url={https://arxiv.org/abs/2409.17439}, 
-      preview={ffhq.gif},
-      selected={true},
-      website={https://serchirag.github.io/rs-imle/},
-      video={https://www.youtube.com/watch?v=TIXEiqfm-Bw},
-      code={https://github.com/SerChirag/rs-imle},
-      pdf={https://arxiv.org/pdf/2409.17439.pdf},
-      abbr={Gen AI}
+@article{Zhang_2026_3DV,
+      author    = {Zhang, Yanshu and Vashist*, Chirag and Peng, Shichong and Li, Ke},
+      title     = {PAPR Up-close: Close-up Neural Point Rendering without Holes},
+      journal = {3DV},
+      year      = {2026},
+      preview={papr-upclose.png},
+      website={https://openreview.net/pdf?id=dkyAX6jVJs},
+      abstract={Point-based representations have recently gained popularity in neural rendering. While they offer many advantages, rendering them from close-up views often results in holes. In splatting-based neural point renderers, these are caused by gaps between different splats, which cause many rays to not intersect with any splat when viewed close-up. A different line of work uses attention to estimate each ray's intersection by interpolating between nearby points. Our work builds on one such method, known as Proximity Attention Point Rendering (PAPR), which learns parsimonious and geometrically accurate point representations. While in principle PAPR can fill holes by learning to interpolate between nearby points appropriately, PAPR also produces holes when rendering close-up, as the intersection point is often predicted incorrectly. We analyze this phenomenon and propose two novel solutions: a method for dynamically selecting nearby points to a ray for interpolation, and a robust attention method that better generalizes to local point configuration around unseen rays. These significantly reduce the prevalence of holes and other artifacts in close-up rendering compared to recent neural point renderers.},
+      abbr={Vision},
+      code={https://github.com/zvict/papr},
+      pdf={https://openreview.net/pdf?id=dkyAX6jVJs},
+      selected={true}
 }
 
 @article{Lin_2025_ICCV,
@@ -33,4 +31,20 @@
       code={https://github.com/JunruL/GlobalMotionCorresponder},
       pdf={https://openaccess.thecvf.com/content/ICCV2025/papers/Lin_Global_Motion_Corresponder_for_3D_Point-Based_Scene_Interpolation_under_Large_ICCV_2025_paper.pdf},
       selected={true}
+}
+
+@article{vashist2024rejectionsamplingimledesigning,
+      title={Rejection Sampling IMLE: Designing Priors for Better Few-Shot Image Synthesis},
+      author={Chirag Vashist and Shichong Peng and Ke Li},
+      journal = {ECCV},
+      year={2024},
+      abstract={We identity an issue with the current IMLE-based methods and propose a novel approach to address it. We achieve <b>state-of-the-art</b> performance on few-shot image generation tasks.},
+      url={https://arxiv.org/abs/2409.17439},
+      preview={ffhq.gif},
+      selected={true},
+      website={https://serchirag.github.io/rs-imle/},
+      video={https://www.youtube.com/watch?v=TIXEiqfm-Bw},
+      code={https://github.com/SerChirag/rs-imle},
+      pdf={https://arxiv.org/pdf/2409.17439.pdf},
+      abbr={Gen AI}
 }
