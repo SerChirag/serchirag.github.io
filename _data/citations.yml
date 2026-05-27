@@ -1,5 +1,5 @@
 metadata:
-  last_updated: '2026-04-08'
+  last_updated: '2026-05-27'
 papers:
   IESBWC0AAAAJ:IjCSPb-OGe4C:
     citations: 0
@@ -10,9 +10,13 @@ papers:
     title: 'PAPR Up-close: Close-up Neural Point Rendering without Holes'
     year: Unknown Year
   IESBWC0AAAAJ:UeHWp8X0CEIC:
-    citations: 7
-    title: 'Rejection sampling imle: Designing priors for better few-shot image synthesis'
+    citations: 8
+    title: 'Rejection Sampling IMLE: Designing Priors for Better Few-Shot Image Synthesis'
     year: '2024'
+  IESBWC0AAAAJ:Y0pCki6q_DkC:
+    citations: 0
+    title: 'One Pass Is Not Enough: Recursive Latent Refinement for Generative Models'
+    year: '2026'
   IESBWC0AAAAJ:qjMakFHDy7sC:
     citations: 21
     title: A generic framework for deep incremental cancelable template generation
