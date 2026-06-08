@@ -1,5 +1,5 @@
 metadata:
-  last_updated: '2026-05-27'
+  last_updated: '2026-06-08'
 papers:
   IESBWC0AAAAJ:IjCSPb-OGe4C:
     citations: 0
@@ -7,8 +7,8 @@ papers:
     year: '2025'
   IESBWC0AAAAJ:Tyk-4Ss8FVUC:
     citations: 0
-    title: 'PAPR Up-close: Close-up Neural Point Rendering without Holes'
-    year: Unknown Year
+    title: 'PAPR Up-Close: Close-Up Neural Point Rendering Without Holes'
+    year: '2026'
   IESBWC0AAAAJ:UeHWp8X0CEIC:
     citations: 8
     title: 'Rejection Sampling IMLE: Designing Priors for Better Few-Shot Image Synthesis'
