@@ -4,10 +4,24 @@
 @string{aps = {American Physical Society,}}
 
 
+@article{vashist2026romsimle,
+      author    = {Vashist, Chirag and Li, Ke},
+      title     = {ROMS-IMLE: A Minimalist Approach to Competitive Single-Step Generative Modelling},
+      journal = {Preprint},
+      year      = {2026},
+      abstract={Generative models have undergone many generations of evolution, from VAEs/GANs to diffusion/flow matching. Along the way, the underlying techniques have become more complicated and various beliefs about what drives strong empirical performance have taken hold. Due to the success of diffusion models and flow matching, one of the more common beliefs is the importance of transforming the noise distribution to the data distribution gradually through many small transformations. We ask whether this is truly necessary, and take a minimalist approach to designing a competitive generative model. We start with the bare-bones essentials, namely just a training objective and a model. We purposefully make both simple. For the training objective, we choose Implicit Maximum Likelihood Estimation (IMLE), and eschew more complicated alternatives such as variational inference, adversarial training and numerical integration. For the model, we eschew transformers and instead choose a moderately sized convolutional network. Then we judiciously added elements that are truly essential, which surprisingly do not include iterative denoising. The result is a single-step parameter-efficient generative model that produces high quality samples at fast speed: it achieves an FID of 2.56 on ImageNet 256 and simultaneously attains good precision and recall.},
+      abbr={Gen AI},
+      preview={roms-imle.webp},
+      url={https://arxiv.org/abs/2607.19332},
+      website={https://arxiv.org/abs/2607.19332},
+      pdf={https://arxiv.org/pdf/2607.19332},
+      selected={true}
+},
+
 @article{Mehdie_2026_Neurips,
       author    = {Esmaeilzadeh, Mehdi and Jolicoeur-Martineau, Alexia and Vashist, Chirag and and Li, Ke},
       title     = {One Pass Is Not Enough: Recursive Latent Refinement for Generative Models},
-      journal = {Under Review},
+      journal = {Preprint},
       year      = {2026},
       preview={afhq_480.webp},
       website={https://mehdie79.github.io/Portfolio_Mehdi_Esmaeilzadeh/project/rtm-imle/},
@@ -29,7 +43,7 @@
       abbr={Vision},
       code={https://github.com/zvict/papr},
       pdf={https://openreview.net/pdf?id=dkyAX6jVJs},
-      selected={true}
+      selected={false}
 }
 
 @article{Lin_2025_ICCV,
