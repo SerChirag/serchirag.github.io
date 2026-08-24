@@ -12,6 +12,82 @@
         {{ page._styles }}
       </style>
     {% endif %}
+
+    {% if page.hero_video %}
+      <!-- Optional full-bleed hero video, opt-in via `hero_video` front matter -->
+      <style type="text/css">
+        .hero-video-wrap {
+          position: relative;
+          left: 50%;
+          right: 50%;
+          margin-left: -50vw;
+          margin-right: -50vw;
+          width: 100vw;
+          min-height: 60vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          margin-bottom: 2rem;
+        }
+        .hero-video-wrap .hero-bg-video {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          min-width: 100%;
+          min-height: 100%;
+          width: auto;
+          height: auto;
+          transform: translate(-50%, -50%);
+          object-fit: cover;
+          z-index: 0;
+        }
+        .hero-video-wrap .hero-bg-overlay {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(180deg, rgba(15, 23, 42, 0.6) 0%, rgba(15, 23, 42, 0.45) 45%, rgba(15, 23, 42, 0.7) 100%);
+          z-index: 1;
+        }
+        .hero-video-wrap .hero-content {
+          position: relative;
+          z-index: 2;
+          max-width: 900px;
+          padding: 3rem 1.5rem;
+          text-align: center;
+        }
+        .post.distill.has-hero > d-title {
+          display: none;
+        }
+        .hero-video-wrap .hero-content h1 {
+          color: #ffffff;
+          font-weight: 800;
+          line-height: 1.15;
+          font-size: clamp(1.75rem, 1rem + 3vw, 2.75rem);
+          margin: 0 0 1rem;
+        }
+        .hero-video-wrap .hero-content p {
+          color: #ffffff;
+          font-size: clamp(1rem, 0.85rem + 0.5vw, 1.2rem);
+          margin: 0;
+          opacity: 0.92;
+        }
+        .hero-video-wrap .hero-links {
+          margin-top: 1.5rem;
+          display: flex;
+          gap: 0.75rem;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+        .hero-video-wrap .hero-links .btn {
+          color: #ffffff;
+          border-color: rgba(255, 255, 255, 0.7);
+        }
+        .hero-video-wrap .hero-links .btn:hover {
+          background: rgba(255, 255, 255, 0.15);
+          color: #ffffff;
+        }
+      </style>
+    {% endif %}
   </head>
 
   <d-front-matter>
@@ -56,8 +132,30 @@
     <!-- Header -->
     {% include header.liquid %}
 
+    {% if page.hero_video %}
+      <div class="hero-video-wrap">
+        <video class="hero-bg-video" autoplay muted loop playsinline preload="auto">
+          <source src="{{ page.hero_video | relative_url }}" type="video/mp4">
+        </video>
+        <div class="hero-bg-overlay"></div>
+        <div class="hero-content">
+          <h1>{{ page.title }}</h1>
+          <p>{{ page.description }}</p>
+          {% if page.hero_links %}
+            <div class="hero-links">
+              {% for link in page.hero_links %}
+                <a href="{{ link.url }}" target="_blank" class="btn btn-outline-light">
+                  {% if link.icon %}<i class="{{ link.icon }}"></i>&nbsp;{% endif %}{{ link.label }}
+                </a>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+
     <!-- Content -->
-    <div class="post distill">
+    <div class="post distill{% if page.hero_video %} has-hero{% endif %}">
       <d-title>
         <h1>{{ page.title }}</h1>
         <p>{{ page.description }}</p>
@@ -67,7 +165,45 @@
       {% endif %}
 
       <d-article>
-        {% if page.toc and page.toc.size > 0 %}
+        {% if page.toc == 'auto' %}
+          {%- comment -%}
+            Build the table of contents from the headings in the post itself, so
+            it cannot drift out of sync with them. Emits the same markup as the
+            hand-written branch below: h2 as a top-level entry, h3 nested under
+            it, anything deeper left out.
+          {%- endcomment -%}
+          <d-contents>
+            <nav class="l-text figcaption">
+              <h3>Contents</h3>
+              {%- assign toc_chunks = content | split: '<h' -%}
+              {%- assign toc_in_sub = false -%}
+              {%- for toc_chunk in toc_chunks -%}
+                {%- assign toc_level = toc_chunk | slice: 0, 1 -%}
+                {%- if toc_level == '2' or toc_level == '3' -%}
+                  {%- assign toc_id_parts = toc_chunk | split: 'id="' -%}
+                  {%- if toc_id_parts.size > 1 -%}
+                    {%- assign toc_anchor = toc_id_parts[1] | split: '"' | first -%}
+                    {%- assign toc_tag_parts = toc_chunk | split: '>' -%}
+                    {%- assign toc_label = toc_tag_parts[1] | split: '</h' | first | strip_html | strip -%}
+                    {%- if toc_level == '2' -%}
+                      {%- if toc_in_sub -%}</ul>{%- assign toc_in_sub = false -%}{%- endif -%}
+                      <div>
+                        <a href="#{{ toc_anchor }}">{{ toc_label }}</a>
+                      </div>
+                    {%- else -%}
+                      {%- unless toc_in_sub -%}<ul>{%- assign toc_in_sub = true -%}{%- endunless -%}
+                      <li>
+                        <a href="#{{ toc_anchor }}">{{ toc_label }}</a>
+                      </li>
+                    {%- endif -%}
+                  {%- endif -%}
+                {%- endif -%}
+              {%- endfor -%}
+              {%- if toc_in_sub -%}</ul>{%- endif -%}
+            </nav>
+          </d-contents>
+
+        {% elsif page.toc and page.toc.size > 0 %}
           <d-contents>
             <nav class="l-text figcaption">
               <h3>Contents</h3>
