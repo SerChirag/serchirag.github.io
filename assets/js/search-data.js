@@ -27,11 +27,11 @@ ninja.data = [{
         
           title: "ROMS-IMLE: A Minimalist Approach to Competitive Single-Step Generative Modelling",
         
-        description: "A single-step, transformer-free generative model trained with IMLE that reaches an FID of 2.56 on ImageNet 256 without iterative denoising.",
+        description: "Which parts of modern generative modelling actually matter? Starting from IMLE and adding back only the essentials: we achieve FID 2.56 on ImageNet 256 in a single step.",
         section: "Posts",
         handler: () => {
           
-            window.location.href = "/blog/2026/roms-imle/";
+            window.location.href = "/roms-imle/";
           
         },
       },{id: "books-the-godfather",
