@@ -1,5 +1,5 @@
 metadata:
-  last_updated: '2026-08-07'
+  last_updated: '2026-08-26'
 papers:
   IESBWC0AAAAJ:IjCSPb-OGe4C:
     citations: 0
@@ -26,7 +26,7 @@ papers:
     title: A generic framework for deep incremental cancelable template generation
     year: '2022'
   IESBWC0AAAAJ:u-x6o8ySG0sC:
-    citations: 9
+    citations: 10
     title: 'Ihashnet: Iris hashing network based on efficient multi-index hashing'
     year: '2020'
   IESBWC0AAAAJ:u5HHmVD_uO8C:
