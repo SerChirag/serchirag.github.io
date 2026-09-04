@@ -190,6 +190,15 @@ exclude:
   - _pages/teaching.md
   - _pages/projects.md
   - _pages/profiles.md
+  - _pages/books.md
+
+  # al-folio demo content. Excluded rather than deleted so the files stay
+  # available as templates: without this the placeholder docs ("project 1",
+  # "The Godfather", the example courses) are still built, and show up in
+  # site search and the sitemap even though their landing pages are excluded.
+  - _books/
+  - _projects/
+  - _teachings/
 
   - CONTRIBUTING.md
   - CUSTOMIZE.md
