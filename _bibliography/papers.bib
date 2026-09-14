@@ -32,6 +32,22 @@
       selected={true}
 },
 
+@article{Moazeni_2026_ECCV,
+      author    = {Moazeni, Alireza and Peng, Shichong and Zhang, Yanshu and Vashist, Chirag and Li, Ke},
+      title     = {Intrinsic-PAPR: Tackling Misattribution in 3D Intrinsic Decomposition via Proximity Attention Point Rendering},
+      journal = {ECCV},
+      year      = {2026},
+      preview={intrinsic-papr.webp},
+      website={https://amoazeni75.github.io/Intrinsic-PAPR/},
+      abstract={Recent point-based intrinsic decomposition and inverse rendering methods have advanced the modelling of the shading and albedo of 3D scenes. However, we identify a fundamental limitation: these methods suffer from a misattribution issue, where individual primitives learn incorrect appearance features despite producing correct aggregated renderings. We show that the root cause lies in volume rendering, which aggregates translucent primitives along each ray and only supervises the final colour, preventing direct supervision of individual primitive features. To address this, we propose Intrinsic PAPR, a robust intrinsic decomposition framework which leverages Proximity Attention Point Rendering (PAPR) to enable direct per-point supervision. Unlike volume rendering approaches, PAPR eliminates translucent primitives and directly predicts appearance at ray-surface intersections, enabling accurate supervision to the feature of each individual point. Our method incorporates a 2D albedo prior adapted with conditional Implicit Maximum Likelihood Estimation (cIMLE) to handle monocular ambiguities, and employs a space carving loss to ensure multi-view consistency. Extensive evaluations on synthetic and real-world datasets demonstrate that Intrinsic PAPR outperforms point-based inverse rendering, NeRF-based intrinsic decomposition, and diffusion-based PBR methods in novel view synthesis and albedo estimation while resolving the misattribution issue.},
+      abbr={Vision},
+      code={https://github.com/amoazeni75/Intrinsic-PAPR},
+      video={https://www.youtube.com/watch?v=l1wdWTg7Scs},
+      pdf={https://amoazeni75.github.io/Intrinsic-PAPR/static/pdf/main.pdf},
+      selected={false}
+}
+
+
 @article{Zhang_2026_3DV,
       author    = {Zhang, Yanshu and Vashist, Chirag and Peng, Shichong and Li, Ke},
       title     = {PAPR Up-close: Close-up Neural Point Rendering without Holes},
