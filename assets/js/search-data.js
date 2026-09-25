@@ -34,11 +34,11 @@ ninja.data = [{
             window.location.href = "/roms-imle/";
           
         },
-      },{id: "news-i-am-in-honolulu-attending-iccv-️",
-          title: 'I am in Honolulu, attending ICCV 🌞🏖️',
-          description: "",
-          section: "News",},{id: "news-recognized-as-gold-reviewer-top-25-for-icml-2026",
+      },{id: "news-recognized-as-gold-reviewer-top-25-for-icml-2026",
           title: 'Recognized as Gold Reviewer (top 25%) for ICML 2026 😃🎊',
+          description: "",
+          section: "News",},{id: "news-1-paper-accepted-at-the-neurips-2026-e-amp-amp-d-track",
+          title: '1 paper accepted at the NeurIPS 2026 E&amp;amp;amp;D Track! 🫡🎊',
           description: "",
           section: "News",},{
         id: 'social-github',
