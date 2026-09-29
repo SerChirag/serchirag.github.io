@@ -5,12 +5,22 @@
 
 
 @article{vashist2026romsimle,
+      author    = {Vashist, Chirag and Santhosh, Vaibhav and Engst, Tristan and Zhang, Yanshu and Li, Ke},
+      title     = {The Fault in Our Metrics: Revisiting Generative Model Evaluation with Chamfer Distance},
+      journal = {NeurIPS Evaluations and Datasets},
+      year      = {2026},
+      abbr={Generative Model},
+      preview={chamfer.webp},
+      selected={true}
+},
+
+@article{vashist2026romsimle,
       author    = {Vashist, Chirag and Li, Ke},
       title     = {ROMS-IMLE: A Minimalist Approach to Competitive Single-Step Generative Modelling},
       journal = {Preprint},
       year      = {2026},
       abstract={Generative models have undergone many generations of evolution, from VAEs/GANs to diffusion/flow matching. Along the way, the underlying techniques have become more complicated and various beliefs about what drives strong empirical performance have taken hold. Due to the success of diffusion models and flow matching, one of the more common beliefs is the importance of transforming the noise distribution to the data distribution gradually through many small transformations. We ask whether this is truly necessary, and take a minimalist approach to designing a competitive generative model. We start with the bare-bones essentials, namely just a training objective and a model. We purposefully make both simple. For the training objective, we choose Implicit Maximum Likelihood Estimation (IMLE), and eschew more complicated alternatives such as variational inference, adversarial training and numerical integration. For the model, we eschew transformers and instead choose a moderately sized convolutional network. Then we judiciously added elements that are truly essential, which surprisingly do not include iterative denoising. The result is a single-step parameter-efficient generative model that produces high quality samples at fast speed: it achieves an FID of 2.56 on ImageNet 256 and simultaneously attains good precision and recall.},
-      abbr={Gen AI},
+      abbr={Generative Model},
       preview={roms-imle.webp},
       url={https://serchirag.github.io/roms-imle/},
       website={https://serchirag.github.io/roms-imle/},
@@ -26,10 +36,10 @@
       preview={afhq_480.webp},
       website={https://mehdie79.github.io/Portfolio_Mehdi_Esmaeilzadeh/project/rtm-imle/},
       abstract={Despite remarkable progress, image generation is far from solved. The dominant metric, FID, conflates sample fidelity with mode coverage and is close to being saturated. Yet a model can still exhibit mode collapse while achieving a low FID, since a handful of sharp, near‑duplicate images can outscore a model that faithfully covers the full data distribution. We argue that precision and recall are essential complements to FID, and that because FID is already saturated, the more meaningful goal is to improve diversity and coverage. Achieving high recall requires a model that explicitly prioritizes mode coverage, unlike most generative models, which optimize sample fidelity. We introduce RTM, which replaces the single‑pass latent mapping in style‑based generators with an iterative refinement process, and show that this consistently improves both quality and diversity. Integrated with Implicit Maximum Likelihood Estimation (IMLE), which optimizes mode coverage by design, RTM achieves the highest precision and recall among current state‑of‑the‑art approaches while maintaining competitive FID, with improvements across CIFAR‑10, CelebA‑HQ at 256×256, and nine few‑shot benchmarks. RTM also improves StyleGAN2 and StyleGAN2‑ADA on CIFAR‑10 and AFHQ‑v1 at 512×512, demonstrating that the benefit is not specific to IMLE. Unlike flow‑matching baselines that achieve competitive FID at the expense of coverage, recursive refinement improves both quality and diversity simultaneously.},
-      abbr={Gen AI},
+      abbr={Generative Model},
       code={https://github.com/mehdie79/RTM_latent_refinement},
       pdf={https://arxiv.org/pdf/2605.15309},
-      selected={true}
+      selected={false}
 },
 
 @article{Moazeni_2026_ECCV,
@@ -90,7 +100,7 @@
       video={https://www.youtube.com/watch?v=TIXEiqfm-Bw},
       code={https://github.com/SerChirag/rs-imle},
       pdf={https://arxiv.org/pdf/2409.17439.pdf},
-      abbr={Gen AI}
+      abbr={Generative Model}
 }
 
 @article{Singh_2021_Neurocomputing,
