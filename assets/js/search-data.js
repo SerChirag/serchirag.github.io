@@ -40,8 +40,8 @@ ninja.data = [{
           section: "News",},{id: "news-1-paper-accepted-at-the-neurips-2026-e-amp-amp-d-track",
           title: '1 paper accepted at the NeurIPS 2026 E&amp;amp;amp;D Track! 🫡🎊',
           description: "",
-          section: "News",},{id: "news-won-the-best-student-poster-award-at-cs-research-day-2026-for-the-fault-in-our-metrics",
-          title: 'Won the Best Student Poster award at CS Research Day 2026 for The...',
+          section: "News",},{id: "news-won-the-best-student-poster-award-at-sfu-cs-research-day-2026-for-the-fault-in-our-metrics",
+          title: 'Won the Best Student Poster award at SFU CS Research Day 2026 for...',
           description: "",
           section: "News",},{
         id: 'social-github',
