@@ -29,3 +29,13 @@ authors:
 ---
 
 Paper, code and a full write-up are coming soon.
+
+## Poster
+
+Won the Best Student Poster award at [SFU CS Research Day 2026](https://events.sfu.ca/event/50323-cs-research-day-2026).
+
+<div class="l-page">
+  {% include figure.liquid loading="eager" zoomable=true path="assets/img/chamfer/poster.jpg" class="img-fluid rounded z-depth-1" alt="Poster for The Fault in Our Metrics" avoid_scaling=true %}
+</div>
+
+[Download the poster (PDF)]({{ '/assets/pdf/chamfer-poster.pdf' | relative_url }})
