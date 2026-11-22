@@ -1,0 +1,159 @@
+{%- comment -%}
+  Hero for the Chamfer page: the paper's two-pentagon counterexample, animated
+  on a canvas under a sheet of frosted glass. The animation is one of the drafts
+  in assets/js/chamfer-hero-draft*.js, picked by the script at the bottom. Opt in from a distill page with
+  `hero_include: hero/chamfer-pentagons.liquid`; buttons come from `hero_links`,
+  and an optional TL;DR from `hero_tldr` (a list, one line per item).
+  A title with a colon is split into a headline and a subtitle.
+{%- endcomment -%}
+{%- assign title_parts = page.title | split: ': ' -%}
+<style>
+  .post.distill.has-hero > d-title {
+    display: none;
+  }
+  .pentagon-hero {
+    position: relative;
+    width: 100%;
+    min-height: clamp(460px, 74vh, 780px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: var(--global-bg-color);
+  }
+  .pentagon-hero-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    z-index: 0;
+    /* Soften the top and bottom edges so cut-off pairs fade out. */
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 10%, #000 86%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 10%, #000 86%, transparent 100%);
+  }
+  /* A sheet of frosted glass over the whole hero: the pentagons turn underneath it. */
+  .pentagon-hero-frost {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: rgba(255, 255, 255, 0.082);
+    background: color-mix(in srgb, var(--global-bg-color) 8.2%, transparent);
+    -webkit-backdrop-filter: blur(2.03px) saturate(140%);
+    backdrop-filter: blur(2.03px) saturate(140%);
+  }
+  .pentagon-hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 860px;
+    margin: 0 1rem;
+    padding: 2rem 1rem;
+    text-align: center;
+  }
+  .pentagon-hero-content h1 {
+    margin: 0;
+    color: var(--global-text-color);
+  }
+  .pentagon-hero-title {
+    display: block;
+    font-weight: 800;
+    font-size: clamp(2.3rem, 1.2rem + 4.2vw, 4rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+  .pentagon-hero-subtitle {
+    display: block;
+    margin-top: 0.75rem;
+    font-weight: 400;
+    font-size: clamp(1.1rem, 0.85rem + 1.1vw, 1.65rem);
+    line-height: 1.3;
+  }
+  .pentagon-hero-venue {
+    margin: 1.1rem 0 0;
+    color: var(--global-text-color-light);
+    font-size: clamp(0.9rem, 0.8rem + 0.3vw, 1.05rem);
+    letter-spacing: 0.02em;
+  }
+  /* Two sentences, one line each on laptop screens and wider; balanced wraps on phones. */
+  .pentagon-hero-tldr {
+    margin: 1.4rem auto 0;
+    color: var(--global-text-color);
+    font-size: clamp(0.95rem, 0.82rem + 0.32vw, 1.1rem);
+    line-height: 1.5;
+    text-wrap: balance;
+  }
+  .pentagon-hero-tldr p {
+    margin: 0;
+  }
+  .pentagon-hero-links {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .pentagon-hero-links .btn {
+    border: 1px solid var(--global-theme-color);
+    border-radius: 999px;
+    padding: 0.35rem 1.15rem;
+    color: var(--global-theme-color);
+    background: transparent;
+    box-shadow: none;
+  }
+  .pentagon-hero-links .btn:hover {
+    color: var(--global-bg-color);
+    background: var(--global-theme-color);
+  }
+</style>
+
+<div class="pentagon-hero" id="pentagon-hero">
+  <canvas class="pentagon-hero-canvas" aria-hidden="true"></canvas>
+  <div class="pentagon-hero-frost" aria-hidden="true"></div>
+  <div class="pentagon-hero-content">
+    <h1>
+      {%- if title_parts.size > 1 -%}
+        <span class="pentagon-hero-title">{{ title_parts[0] }}</span>
+        <span class="pentagon-hero-subtitle">{{ page.title | remove_first: title_parts[0] | remove_first: ': ' }}</span>
+      {%- else -%}
+        <span class="pentagon-hero-title">{{ page.title }}</span>
+      {%- endif -%}
+    </h1>
+    {% if page.description %}
+      <p class="pentagon-hero-venue">{{ page.description }}</p>
+    {% endif %}
+    {% if page.hero_tldr %}
+      <div class="pentagon-hero-tldr">
+        {% for line in page.hero_tldr %}
+          <p>{{ line }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% if page.hero_links %}
+      <div class="pentagon-hero-links">
+        {% for link in page.hero_links %}
+          <a
+            href="{% if link.url contains '://' %}{{ link.url }}{% else %}{{ link.url | relative_url }}{% endif %}"
+            class="btn btn-sm"
+            role="button"
+          >
+            {%- if link.icon %}<i class="{{ link.icon }}"></i>&nbsp;{% endif -%}
+            {{- link.label -}}
+          </a>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+<script>
+  // Hero drafts: draft 3 (the wind that settles into a pentagon) is the default,
+  // and ?hero=draft2 shows the pentagons turning in place. Keep one, delete the rest.
+  (function () {
+    var drafts = {
+      draft2: "{{ '/assets/js/chamfer-hero-draft2.js' | relative_url }}",
+      draft3: "{{ '/assets/js/chamfer-hero-draft3.js' | relative_url }}",
+    };
+    var script = document.createElement('script');
+    script.src = drafts[new URLSearchParams(window.location.search).get('hero')] || drafts.draft3;
+    document.body.appendChild(script);
+  })();
+</script>

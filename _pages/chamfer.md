@@ -5,6 +5,18 @@ description: "NeurIPS 2026, Evaluations & Datasets Track"
 date: 2026-10-29
 permalink: /chamfer/
 
+hero_include: hero/chamfer-pentagons.liquid
+hero_tldr:
+  - Existing evaluation metrics for image generation are either uninformative or unreliable.
+  - We introduce a simple, principled replacement that is intuitive, fast and interpretable.
+hero_links:
+  - label: Paper
+    url: /assets/pdf/chamfer-paper.pdf
+    icon: "fas fa-file-pdf"
+  - label: Poster
+    url: /assets/pdf/chamfer-poster.pdf
+    icon: "fas fa-image"
+
 authors:
   - name: Chirag Vashist
     url: "https://serchirag.github.io/"
@@ -26,20 +38,7 @@ authors:
     url: "https://www.sfu.ca/~keli/"
     affiliations:
       name: "<a href='https://sfuapex.com/'>APEX Lab</a>, SFU &middot; Amii and CIFAR"
-
-_styles: >
-  .paper-links {
-    margin-bottom: 1rem;
-  }
-  .paper-links a.btn {
-    border: 1px solid var(--global-theme-color);
-    padding: 0.25rem 1rem;
-  }
 ---
-
-<div class="paper-links">
-  <a href="{{ '/assets/pdf/chamfer-paper.pdf' | relative_url }}" class="btn btn-sm z-depth-0" role="button"><i class="fas fa-file-pdf"></i>&nbsp;Paper</a>
-</div>
 
 Code and a full write-up are coming soon.
 
