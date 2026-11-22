@@ -2,7 +2,7 @@
 // flowing in several streams. Every few seconds the wind settles into the
 // paper's two-pentagon counterexample behind the title
 // (Chamfer/Illustrations/Counterexamples/pentagon.py), holds, and a gust blows
-// it apart across the whole hero, where the particles drift on with the wind.
+// it away like petals that flutter and tumble across the whole hero.
 //
 // Geometry, as in the paper: real samples (squares) on a regular
 // pentagon of radius 1, one vertex up; candidates (orange, drawn as round dots
@@ -51,7 +51,7 @@
   const FLOW = 5.5; // wind between a release and the next pentagon
   const GATHER = 3; // the wind calms while every particle flies to its mark
   const HOLD = 4; // the pentagon on its own
-  const RELEASE_SPREAD = 0.9; // the gust takes the downwind marks first, the upwind ones this much later
+  const RELEASE_SPREAD = 1.6; // the gust lifts the downwind marks first, the upwind ones this much later
 
   // The wind.
   const PER_SLOT = 18; // particles that merge into each mark (198 in all)
@@ -68,11 +68,20 @@
   const STREAM_SQUARE = [5.5, 7.5]; // side in pixels
   const STREAM_DOT = [2.75, 3.75]; // radius in pixels
   const STREAM_OPACITY = 0.9;
-  // The break-up: each particle bursts out to its own spot, spread evenly over
-  // the whole hero, then drifts on with its stream.
-  const SPREAD_TIME = 2.6; // seconds to reach its spot
-  const SPREAD_MARGIN = { x: 16, y: 0.06 }; // keep spots this far in: pixels at the sides, share of the height top and bottom
-  const GUST_PUSH = 90; // pixels the paths bow out along the gust direction
+  // The break-up: a gust blows the marks away like petals. Each one is lifted
+  // off in turn, picks up speed downwind, flutters side to side and tumbles,
+  // and drifts along a gently curving path; as the gust dies down its own
+  // stream takes over. Petals that leave one edge come back in at the opposite
+  // one, so the drift covers the whole hero.
+  const PETAL_SPEED = [80, 240]; // pixels per second at the height of the gust
+  const PETAL_SPREAD = 0.6; // radians either side of the gust direction
+  const PETAL_LIFT = 0.8; // seconds to pick up speed
+  const PETAL_CALM = 4; // seconds for the gust to die down
+  const PETAL_CURL = 0.35; // how much the paths curve
+  const FLUTTER = { amp: [8, 28], freq: [0.5, 1.2] }; // side-to-side sway: pixels, cycles per second
+  const TUMBLE = 2.2; // radians per second, the fastest a petal spins in the gust
+  const FLIP = { rate: [1.2, 3], thinnest: 0.25 }; // flipping over: radians per second, how thin it gets
+  const WRAP_MARGIN = 40; // pixels past an edge before a petal comes back in on the other side
 
   const SEED = 2026;
 
@@ -206,9 +215,18 @@
           spin: rng() * Math.PI * 2,
           spinV: (rng() * 2 - 1) * 0.6,
           bulge: (rng() * 2 - 1) * 0.25, // how much the path curves on the way to the mark
-          spread: (rng() * 2 - 1) * 0.25, // radians off the gust direction
+          petalSpeed: lerp(PETAL_SPEED[0], PETAL_SPEED[1], rng()),
+          petalAngle: (rng() * 2 - 1) * PETAL_SPREAD,
+          curl: (rng() * 2 - 1) * PETAL_CURL,
+          flutA: lerp(FLUTTER.amp[0], FLUTTER.amp[1], rng()),
+          flutW: lerp(FLUTTER.freq[0], FLUTTER.freq[1], rng()) * Math.PI * 2,
+          flutP: rng() * Math.PI * 2,
+          tumble: (rng() * 2 - 1) * TUMBLE,
+          flipRate: lerp(FLIP.rate[0], FLIP.rate[1], rng()),
+          flipP: rng() * Math.PI * 2,
           mode: "flow", // "flow" in a lane, or "free" after being blown off the pentagon
           free: null,
+          wrapFix: null, // edge wrap held fixed while flying to a mark, so the start never jumps
           gather: null, // { start, dur } while flying to the mark
           held: false,
           release: 0,
@@ -234,19 +252,51 @@
     return [L.ox + L.dx * p.s + L.nx * across, L.oy + L.dy * p.s + L.ny * across];
   }
 
-  // Blown off the pentagon: a fast burst out to the particle's own spot, bowed
-  // along the gust, easing into a drift with its stream.
-  function freePos(p) {
+  // How far the gust has carried a petal after tau seconds: it picks up speed
+  // over PETAL_LIFT while the gust dies down over PETAL_CALM.
+  function gustDistance(speed, tau) {
+    const lift = 1 / PETAL_LIFT;
+    const calm = 1 / PETAL_CALM;
+    return speed * ((1 - Math.exp(-calm * tau)) / calm - (1 - Math.exp(-(lift + calm) * tau)) / (lift + calm));
+  }
+
+  // Blown off the pentagon, before wrapping round the edges.
+  function petalPath(p) {
     const f = p.free;
     const tau = sim - f.t0;
-    const T = SPREAD_TIME;
-    const k = clamp01(tau / T);
-    const e = 1 - (1 - k) ** 3;
-    const push = GUST_PUSH * Math.sin(Math.PI * k);
-    const drift = p.speed * (tau < T ? (tau * tau) / (2 * T) : tau - T / 2);
+    const ramp = clamp01(tau / PETAL_LIFT);
+    const flutter = p.flutP + p.flutW * tau;
+    const carried = gustDistance(p.petalSpeed, tau);
+    // Along the gust, with a small surge and sway that trace a figure eight,
+    // and a sideways curl that grows with distance.
+    const along = carried + 0.3 * p.flutA * Math.sin(2 * flutter) * ramp;
+    const across = p.flutA * Math.sin(flutter) * ramp + (p.curl * carried * carried) / unit;
+    // Its own stream takes over as the gust dies down.
     const L = lanes[p.k];
-    const wob = p.wobA * Math.sin(p.wobP + p.wobF * sim) * k;
-    return [lerp(f.rx, f.tx, e) + f.gx * push + L.dx * drift + L.nx * wob, lerp(f.ry, f.ty, e) + f.gy * push + L.dy * drift + L.ny * wob];
+    const byStream = p.speed * (tau - PETAL_CALM * (1 - Math.exp(-tau / PETAL_CALM)));
+    return [f.rx + f.gx * along - f.gy * across + L.dx * byStream, f.ry + f.gy * along + f.gx * across + L.dy * byStream];
+  }
+
+  function wrapOffset([x, y]) {
+    const w = width + 2 * WRAP_MARGIN;
+    const h = height + 2 * WRAP_MARGIN;
+    return [Math.floor((x + WRAP_MARGIN) / w) * w, Math.floor((y + WRAP_MARGIN) / h) * h];
+  }
+
+  function freePos(p) {
+    const raw = petalPath(p);
+    const [ox, oy] = p.wrapFix || wrapOffset(raw);
+    return [raw[0] - ox, raw[1] - oy];
+  }
+
+  // A petal's spin and flip: quick while the gust blows, settling as it dies down.
+  function petalLook(p) {
+    const f = p.free;
+    const tau = sim - f.t0;
+    const turn = p.tumble * PETAL_CALM * (1 - Math.exp(-tau / PETAL_CALM)) + p.spinV * tau;
+    const gustLeft = Math.exp(-tau / (2 * PETAL_CALM)) * clamp01(tau / PETAL_LIFT);
+    const flip = 1 - (1 - FLIP.thinnest) * gustLeft * Math.abs(Math.sin(p.flipP + p.flipRate * tau));
+    return { angle: f.a0 + turn, flip };
   }
 
   const basePos = (p) => (p.mode === "free" ? freePos(p) : lanePos(p));
@@ -264,6 +314,7 @@
     choosePentagon();
     const rng = mulberry32(SEED + 1000 + cycle);
     for (const p of particles) {
+      if (p.mode === "free") p.wrapFix = wrapOffset(petalPath(p));
       const [x, y] = basePos(p);
       const [tx, ty] = slotPos(p.slot);
       const dur = Math.max(1.3, Math.min(2.3, Math.hypot(tx - x, ty - y) / 420));
@@ -282,22 +333,9 @@
     });
     const lo = Math.min(...proj);
     const hi = Math.max(...proj);
-    // Spots spread evenly over the whole hero: one jittered grid cell per particle, shuffled.
-    const cols = Math.max(1, Math.round(Math.sqrt((particles.length * width) / height)));
-    const rows = Math.ceil(particles.length / cols);
-    const cells = Array.from({ length: cols * rows }, (_, i) => i);
-    for (let i = cells.length - 1; i > 0; i--) {
-      const j = Math.floor(rng() * (i + 1));
-      [cells[i], cells[j]] = [cells[j], cells[i]];
-    }
-    const top = SPREAD_MARGIN.y * height;
-    const bottom = (1 - SPREAD_MARGIN.y) * height;
     particles.forEach((p, i) => {
       const order = hi > lo ? (hi - proj[i]) / (hi - lo) : 0;
-      p.release = sim + order * RELEASE_SPREAD + rng() * 0.2;
-      const cx = ((cells[i] % cols) + rng()) / cols;
-      const cy = (Math.floor(cells[i] / cols) + rng()) / rows;
-      p.dest = { x: lerp(SPREAD_MARGIN.x, width - SPREAD_MARGIN.x, cx), y: lerp(top, bottom, cy) };
+      p.release = sim + order * RELEASE_SPREAD + rng() * 0.3;
     });
     phase = "flow";
     phaseStart = sim;
@@ -319,39 +357,36 @@
       if (p.mode === "flow") {
         p.s += p.speed * rate * dt;
         if (!busy && p.s > lanes[p.k].half) p.s -= 2 * lanes[p.k].half;
-      } else if (!busy) {
-        // Off the edge after being blown away: rejoin the lane upstream, off screen.
-        const [x, y] = freePos(p);
-        const m = 30 + p.size;
-        if (x < -m || x > width + m || y < -m || y > height + m) {
-          p.mode = "flow";
-          p.free = null;
-          p.s = -lanes[p.k].half;
-        }
       }
       if (p.gather && sim >= p.gather.start + p.gather.dur) {
         p.gather = null;
+        p.wrapFix = null;
         p.held = true;
       }
       if (p.held && phase === "flow" && sim >= p.release) {
         const [rx, ry] = slotPos(p.slot);
-        const a = Math.atan2(gust.y, gust.x) + p.spread;
-        p.free = { rx, ry, tx: p.dest.x, ty: p.dest.y, t0: sim, gx: Math.cos(a), gy: Math.sin(a) };
+        const a = Math.atan2(gust.y, gust.x) + p.petalAngle;
+        p.free = { rx, ry, t0: sim, gx: Math.cos(a), gy: Math.sin(a), a0: PENTAGON_OMEGA * sim };
         p.mode = "free";
         p.held = false;
       }
     }
   }
 
+  // Where a particle is drawn and how: position, size, turn, flip (1 is face on) and opacity.
   function place(p) {
     const th = PENTAGON_OMEGA * sim;
-    const streamAngle = p.spin + p.spinV * sim;
     const M = markSize(p);
     if (p.held) {
       const [x, y] = slotPos(p.slot);
-      return { x, y, size: M, angle: th, alpha: holdAlpha };
+      return { x, y, size: M, angle: th, flip: 1, alpha: holdAlpha };
     }
     const [bx, by] = basePos(p);
+    const look = p.mode === "free" ? petalLook(p) : { angle: p.spin + p.spinV * sim, flip: 1 };
+    // Size and opacity of a petal shrink from the mark's to its own over its first moments.
+    const fromMark = p.mode === "free" ? smooth(clamp01((sim - p.free.t0) / 1.2)) : 1;
+    const size = lerp(M, p.size, fromMark);
+    const alpha = lerp(holdAlpha, STREAM_OPACITY, fromMark);
     if (p.gather) {
       const e = easeInOut(clamp01((sim - p.gather.start) / p.gather.dur));
       const [tx, ty] = slotPos(p.slot);
@@ -361,22 +396,13 @@
       return {
         x: bx + dx * e - dy * b,
         y: by + dy * e + dx * b,
-        size: lerp(p.size, M, e),
-        angle: lerpSquareAngle(streamAngle, th, e),
-        alpha: lerp(STREAM_OPACITY, holdAlpha, e),
+        size: lerp(size, M, e),
+        angle: lerpSquareAngle(look.angle, th, e),
+        flip: lerp(look.flip, 1, e),
+        alpha: lerp(alpha, holdAlpha, e),
       };
     }
-    if (p.mode === "free") {
-      const k = smooth(clamp01((sim - p.free.t0) / 1.2));
-      return {
-        x: bx,
-        y: by,
-        size: lerp(M, p.size, k),
-        angle: lerpSquareAngle(th, streamAngle, k),
-        alpha: lerp(holdAlpha, STREAM_OPACITY, k),
-      };
-    }
-    return { x: bx, y: by, size: p.size, angle: streamAngle, alpha: STREAM_OPACITY };
+    return { x: bx, y: by, size, angle: look.angle, flip: look.flip, alpha };
   }
 
   function render() {
@@ -387,19 +413,20 @@
       ctx.fillStyle = square ? COLORS.real : COLORS.gen;
       for (const p of particles) {
         if (p.square !== square) continue;
-        const { x, y, size, angle, alpha } = place(p);
+        const { x, y, size, angle, flip, alpha } = place(p);
         ctx.globalAlpha = alpha * fadeIn;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        ctx.scale(1, flip); // a petal flipping over looks thinner
         if (square) {
-          ctx.save();
-          ctx.translate(x, y);
-          ctx.rotate(angle);
           ctx.fillRect(-size / 2, -size / 2, size, size);
-          ctx.restore();
         } else {
           ctx.beginPath();
-          ctx.arc(x, y, size, 0, Math.PI * 2);
+          ctx.arc(0, 0, size, 0, Math.PI * 2);
           ctx.fill();
         }
+        ctx.restore();
       }
     }
     ctx.globalAlpha = 1;
