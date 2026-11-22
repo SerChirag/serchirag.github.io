@@ -40,6 +40,10 @@ authors:
       name: "<a href='https://sfuapex.com/'>APEX Lab</a>, SFU &middot; Amii and CIFAR"
 ---
 
+## Abstract
+
+Evaluation metrics decide which image generative models are judged better, yet widely used metrics are either uninformative or unreliable. Generative performance should be evaluated across two separate axes: the realism of the generated samples, and their coverage of the real distribution. Most popular metrics, including FID and KID, report a single symmetric score that conflates these two axes, which makes diagnosing and comparing models hard. A second family of metrics addresses this limitation by reporting along the two axes separately. We call such metrics disentangled, and they include Precision/Recall and Density/Coverage. However, we show that existing disentangled metrics approximate empirical distributions with oversized volumes, which can cause them to admit off-manifold samples. This causes these metrics to respond unreliably to simple distributional changes and image distortions. We propose Chamfer distance, an intuitive disentangled metric that directly measures cross-set nearest-neighbor distances between real and generated samples. We show that the resulting one-sided distances provide interpretable signals for fidelity and diversity, respond reliably to simple distributional changes, while remaining computationally efficient.
+
 Code and a full write-up are coming soon.
 
 ## Poster
