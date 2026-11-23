@@ -1,0 +1,465 @@
+{%- comment -%}
+  Two-pentagon simulator: the paper's counterexample with one view per metric
+  (FD, and the pairs Precision & Recall, Density & Coverage, Chamfer). Each view lists the
+  metric's numbered steps, highlights the one being carried out, narrates it in
+  a commentary line, and ends on the value. Drawn by assets/js/chamfer-pentagon-sim.js, which also builds the
+  tabs. Use it anywhere in a page with an include tag for
+  chamfer/pentagon-sim.liquid.
+{%- endcomment -%}
+<style>
+  .psim {
+    margin: 2rem 0;
+    padding: 1.25rem 1.25rem 1rem;
+    border: 1px solid var(--global-divider-color);
+    border-radius: 14px;
+  }
+  .psim-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .psim button {
+    font: inherit;
+    cursor: pointer;
+  }
+  .psim-tab,
+  .psim-replay {
+    border: 1px solid var(--global-theme-color);
+    border-radius: 999px;
+    padding: 0.3rem 1rem;
+    font-size: 0.9rem;
+    color: var(--global-theme-color);
+    background: transparent;
+  }
+  .psim-tab[aria-selected='true'] {
+    color: var(--global-bg-color);
+    background: var(--global-theme-color);
+  }
+  /* Hover on an unselected tab is only a light tint, so it never looks selected. */
+  .psim-tab:not([aria-selected='true']):hover,
+  .psim-replay:hover {
+    background: rgba(85, 63, 195, 0.1);
+    background: color-mix(in srgb, var(--global-theme-color) 12%, transparent);
+  }
+  /* Figure and steps side by side; under them, the legend (below the points) and Replay (bottom right).
+     On a phone they stack: figure, legend, steps, Replay. */
+  /* Chamfer is our metric: its tab is gold, with a crown and an "ours" badge. */
+  .psim {
+    --psim-ours: #a16207;
+    --psim-ours-ink: #ffffff;
+  }
+  html[data-theme='dark'] .psim {
+    --psim-ours: #f5b83d;
+    --psim-ours-ink: #1c1c1d;
+  }
+  .psim-tab.psim-tab-ours {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-color: var(--psim-ours);
+    font-weight: 600;
+    color: var(--psim-ours);
+  }
+  /* The site colours every span with the text colour; inside a tab, follow the tab. */
+  .psim-tab span {
+    color: inherit;
+  }
+  .psim-tab.psim-tab-ours[aria-selected='true'] {
+    color: var(--psim-ours-ink);
+    background: var(--psim-ours);
+  }
+  .psim-tab.psim-tab-ours:not([aria-selected='true']):hover {
+    background: rgba(161, 98, 7, 0.1);
+    background: color-mix(in srgb, var(--psim-ours) 14%, transparent);
+  }
+  .psim-crown {
+    width: 1.05em;
+    height: 1.05em;
+    fill: currentColor;
+  }
+  .psim-ours {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.05rem 0.45rem;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .psim-title .psim-ours {
+    margin-left: 0.3rem;
+    vertical-align: 0.2em;
+    color: var(--psim-ours);
+  }
+  .psim-body {
+    display: grid;
+    grid-template-areas: 'figure' 'legend' 'panel' 'metrics' 'replay';
+    gap: 1rem 2rem;
+    align-items: center;
+  }
+  @media (min-width: 640px) {
+    .psim-body {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-areas: 'figure panel' 'figure metrics' 'legend replay';
+    }
+  }
+  .psim-replay {
+    grid-area: replay;
+    justify-self: end;
+  }
+  .psim-figure {
+    grid-area: figure;
+    display: block;
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    margin: 0 auto;
+    overflow: visible;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  /* The panel's height is locked to the tallest metric (see the script). */
+  .psim-panel {
+    grid-area: panel;
+    overflow: hidden;
+  }
+  .psim-from-right {
+    animation: psim-in-right 0.35s ease;
+  }
+  .psim-from-left {
+    animation: psim-in-left 0.35s ease;
+  }
+  @keyframes psim-in-right {
+    from {
+      opacity: 0;
+      transform: translateX(24px);
+    }
+  }
+  @keyframes psim-in-left {
+    from {
+      opacity: 0;
+      transform: translateX(-24px);
+    }
+  }
+  .psim-title {
+    margin-bottom: 0.4rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--global-text-color);
+  }
+  /* A note after the title (e.g. "under Gaussian assumption"), and a byline under it. */
+  .psim-title .psim-title-note {
+    font-weight: 400;
+    color: var(--global-text-color-light);
+  }
+  .psim-byline {
+    margin: -0.2rem 0 1.1rem;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: var(--global-text-color-light);
+  }
+  .psim-byline:empty {
+    display: none;
+  }
+  /* The steps, numbered, under a heading per metric. The one being carried out is highlighted. */
+  .psim-steps {
+    margin: 0 0 0.75rem;
+    padding: 0;
+    list-style: none;
+    counter-reset: psim-step;
+  }
+  .psim-steps li.psim-group {
+    margin: 0.7rem 0 0.3rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--global-text-color-light);
+    transition: color 0.4s ease;
+  }
+  .psim-steps li.psim-group:first-child {
+    margin-top: 0;
+  }
+  .psim-steps li.psim-group[data-state='active'] {
+    color: var(--global-theme-color);
+  }
+  .psim-steps li.psim-group[data-state='done'] {
+    color: var(--global-text-color);
+  }
+  .psim-steps li.psim-step {
+    position: relative;
+    margin: 0 0 0.35rem;
+    padding: 0.45rem 0.7rem 0.45rem 2.4rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    color: var(--global-text-color-light);
+    counter-increment: psim-step;
+    transition:
+      background 0.4s ease,
+      color 0.4s ease;
+  }
+  .psim-steps li.psim-step::before {
+    content: counter(psim-step);
+    position: absolute;
+    left: 0.6rem;
+    top: 0.45rem;
+    width: 1.35rem;
+    height: 1.35rem;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.25rem;
+    text-align: center;
+  }
+  .psim-steps li.psim-step::before {
+    transition:
+      background 0.4s ease,
+      color 0.4s ease,
+      border-color 0.4s ease;
+  }
+  .psim-steps li.psim-step[data-state='active'] {
+    font-weight: 600;
+    color: var(--global-text-color);
+    background: rgba(85, 63, 195, 0.08);
+    background: color-mix(in srgb, var(--global-theme-color) 10%, transparent);
+  }
+  .psim-steps li.psim-step[data-state='active']::before {
+    border-color: var(--global-theme-color);
+    color: var(--global-bg-color);
+    background: var(--global-theme-color);
+  }
+  .psim-steps li.psim-step[data-state='done'] {
+    color: var(--global-text-color);
+  }
+  .psim-steps li.psim-step[data-state='done']::before {
+    content: '\2713';
+    border-color: var(--global-theme-color);
+    color: var(--global-theme-color);
+  }
+  /* Commentary: what is happening right now. */
+  /* Commentary: the same font and colour as the verdict, in italics. */
+  .psim-comment {
+    min-height: 3em;
+    margin: 0 0 0.6rem;
+    font-size: 0.9rem;
+    font-style: italic;
+    line-height: 1.45;
+    color: var(--global-text-color-light);
+  }
+  /* A new commentary line (or verdict) fades in after the old one has faded out. */
+  .psim-comment {
+    transition: opacity 0.25s ease;
+  }
+  .psim-comment.psim-out {
+    opacity: 0;
+  }
+  .psim-fade-in {
+    animation: psim-fade-in 0.4s ease;
+  }
+  @keyframes psim-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+  }
+  /* The metrics row, above Replay: every metric of the view, named from the start. */
+  .psim-results {
+    grid-area: metrics;
+    align-self: end;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--global-divider-color);
+  }
+  .psim-metrics {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0.4rem 1rem;
+  }
+  .psim-metric {
+    font-size: 1.05rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--global-text-color);
+    transition: color 0.4s ease;
+  }
+  .psim-metric[data-state='todo'] {
+    font-weight: 600;
+    color: var(--global-text-color-light);
+  }
+  .psim-verdict {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: var(--global-text-color-light);
+  }
+  .psim-legend {
+    font-size: 0.8rem;
+    color: var(--global-text-color-light);
+    grid-area: legend;
+    display: flex;
+    justify-content: center;
+    gap: 1.25rem;
+  }
+  .psim-legend span::before {
+    content: '';
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-right: 0.4rem;
+    vertical-align: -1px;
+  }
+  .psim-legend .psim-key-real::before {
+    background: #2f80ed;
+  }
+  .psim-legend .psim-key-gen::before {
+    border-radius: 50%;
+    background: #f08a2c;
+  }
+  /* Drawing. Units are the pentagon's: the real pentagon has radius 1. */
+  /* Marks fade in and out rather than popping. */
+  .psim-dyn {
+    transition: opacity 0.6s ease;
+  }
+  /* A step fades the set of points it does not use. */
+  .psim-set {
+    transition: opacity 0.6s ease;
+  }
+  .psim-set.psim-faded {
+    opacity: 0.18;
+  }
+  .psim-set.psim-dim {
+    opacity: 0.5;
+  }
+  /* Single points fade too (Chamfer: the samples not reached yet). */
+  .psim-real,
+  .psim-gen {
+    transition: opacity 0.5s ease;
+  }
+  .psim-real.psim-faded,
+  .psim-gen.psim-faded {
+    opacity: 0.18;
+  }
+  .psim-real {
+    fill: #2f80ed;
+  }
+  .psim-gen {
+    fill: #f08a2c;
+  }
+  /* Balls have only a faint edge, so many overlapping ones stay calm. */
+  .psim-ball {
+    fill: rgba(78, 106, 138, 0.12);
+    stroke: rgba(78, 106, 138, 0.3);
+    stroke-width: 0.008;
+    transition:
+      opacity 0.6s ease,
+      fill 0.3s ease,
+      stroke 0.3s ease,
+      stroke-width 0.3s ease;
+  }
+  /* The ball being drawn, or the one(s) in the check happening right now. */
+  .psim-ball.active {
+    fill: rgba(78, 106, 138, 0.26);
+    stroke: #4e6a8a;
+    stroke-width: 0.025;
+  }
+  /* Nearest neighbour: the one line to the closest sample. */
+  .psim-nn {
+    stroke: var(--global-text-color);
+    stroke-width: 0.025;
+  }
+  .psim-ring {
+    fill: none;
+    stroke: var(--global-text-color);
+    stroke-width: 0.022;
+  }
+  .psim-count {
+    fill: var(--global-text-color);
+    font-size: 0.17px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: middle;
+  }
+  .psim-spoke {
+    stroke: #4e6a8a;
+    stroke-width: 0.015;
+  }
+  /* A fitted Gaussian's isocontours; the real ones' fills stack into a soft density. */
+  .psim-ellipse-real {
+    fill: rgba(47, 128, 237, 0.05);
+    stroke: #2f80ed;
+    stroke-width: 0.022;
+  }
+  .psim-ellipse-gen {
+    fill: none;
+    stroke: #f08a2c;
+    stroke-width: 0.025;
+    stroke-dasharray: 0.09 0.07;
+  }
+  .psim-mean-real {
+    fill: none;
+    stroke: #2f80ed;
+    stroke-width: 0.03;
+  }
+  .psim-mean-gen {
+    fill: none;
+    stroke: #f08a2c;
+    stroke-width: 0.03;
+  }
+  .psim-link-fid {
+    stroke: #f08a2c;
+    stroke-width: 0.02;
+  }
+  .psim-link-cov {
+    stroke: #2f80ed;
+    stroke-width: 0.02;
+    stroke-dasharray: 0.05 0.04;
+  }
+  .psim-check {
+    fill: none;
+    stroke-width: 0.03;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .psim-check.ok {
+    stroke: #1f9d72;
+  }
+  .psim-check.no {
+    stroke: #c4452d;
+  }
+</style>
+
+<div class="psim l-page" data-pentagon-sim>
+  <div class="psim-tabs" role="tablist" aria-label="Choose a metric"></div>
+  <div class="psim-body">
+    <svg
+      class="psim-figure"
+      viewBox="-2.4 -2.4 4.8 4.8"
+      role="img"
+      aria-label="Two pentagons: real samples on one pentagon, generated samples at the centre and on a turned pentagon"
+    ></svg>
+    <div class="psim-panel" aria-live="polite">
+      <div class="psim-title"></div>
+      <div class="psim-byline"></div>
+      <ol class="psim-steps"></ol>
+      <div class="psim-comment"></div>
+    </div>
+    <div class="psim-results" aria-live="polite">
+      <div class="psim-metrics"></div>
+      <div class="psim-verdict"></div>
+    </div>
+    <div class="psim-legend">
+      <span class="psim-key-real">Real samples</span>
+      <span class="psim-key-gen">Generated samples</span>
+    </div>
+    <button class="psim-replay" type="button">Replay</button>
+  </div>
+</div>
+<script defer src="{{ '/assets/js/chamfer-pentagon-sim.js' | relative_url }}"></script>
