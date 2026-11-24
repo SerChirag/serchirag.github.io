@@ -97,7 +97,7 @@ In this paper, we show that existing popular evaluation metrics are fundamentall
 
 {% comment %}
 The sections below are drafts, hidden from the built page until they are
-written. Move this comment tag down past a section to publish it.
+written. Move a section out of this block to publish it.
 
 ## Distributional
 
@@ -128,12 +128,14 @@ written. Move this comment tag down past a section to publish it.
 - TBD
 </div>
 
+{% endcomment %}
+
 ## Interpretability of Chamfer
 
-<div class="plan-note" markdown="1">
-- TBD
-</div>
+{% include chamfer/fidelity-density.liquid %}
 
+{% include chamfer/fidelity-density.liquid data="chamfer_coverage_density" images="/assets/chamfer-coverage/" note="Each row: the real image whose distance is closest to the marker, and the model's generated sample nearest to it." %}
+
+{% comment %}
 Code and a full write-up are coming soon.
-
 {% endcomment %}

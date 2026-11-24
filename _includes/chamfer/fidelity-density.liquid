@@ -1,267 +1,241 @@
 {%- comment -%}
-  Chamfer-Fidelity per sample, model by model: the paper's Figure 11 made
-  interactive. The chart shows how far each generated sample lies from its
-  nearest real image, one curve per model. A marker on the distance axis picks
-  a distance, and the square grid beside the chart shows each model's sample
-  nearest to it. The chart zooms and pans, and the whole box is sized to fit
-  the window. Drawn by assets/js/chamfer-fidelity-density.js.
+  A distance plot with a nearest-sample explorer: the paper's Figures 11 and 12
+  made interactive. The chart shows, one curve per model, how far each sample
+  lies from its nearest neighbour in the other set. A marker on the distance
+  axis picks a distance, and the square grid beside the chart shows the sample
+  nearest to it: for Figure 11 (Chamfer-Fidelity) each model's generated
+  sample; for Figure 12 (Chamfer-Coverage) a real image and the model's sample
+  nearest to it. The whole box is sized to fit the window. Drawn by assets/js/chamfer-fidelity-density.js.
 
-  Data: _data/chamfer_fidelity_density.json (curves, means and each sample's
-  distance). Images: assets/chamfer-samples/<model id>/<file>, the same folders
-  the ranking chart uses. Only the images on show are loaded.
+  Parameters, all optional:
+    data     the _data file to draw (default chamfer_fidelity_density). Each
+             sample has `d` and `file`; samples with `real` too are shown as pairs.
+             bin/chamfer_figure_data.py writes these files from the paper's export.
+    images   the folder that `file` and `real` are relative to
+             (default /assets/chamfer-fidelity/)
+    note     the line above the grid
+    caption  a caption under the box
 
-  Use it with an include tag for chamfer/fidelity-density.liquid; pass
-  caption="..." to put a caption under it.
+  Only the images on show are loaded. The styles and script are added once per
+  page, however many of these the page has.
 {%- endcomment -%}
-<style>
-  .cfd {
-    --cfd-tint: rgba(85, 63, 195, 0.1);
-    margin: 2rem 0;
-    padding: 1rem 1.25rem;
-    border: 1px solid var(--global-divider-color);
-    border-radius: 14px;
-  }
-  body d-article .cfd-caption {
-    margin-top: -1.25rem;
-    color: var(--global-text-color-light);
-  }
-  .cfd button {
-    font: inherit;
-    cursor: pointer;
-  }
-  .cfd-top {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 0.25rem 1rem;
-    margin-bottom: 0.5rem;
-  }
-  /* The key: a line per model in its colour, and the dashed line for a mean. */
-  .cfd-key {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.25rem 1rem;
-    font-size: 0.82rem;
-    color: var(--global-text-color);
-  }
-  .cfd-key-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-  }
-  .cfd-key-item svg {
-    flex: none;
-    width: 22px;
-    height: 10px;
-  }
-  .cfd-key-mean {
-    color: var(--global-text-color-light);
-  }
-  .cfd-hint {
-    font-size: 0.78rem;
-    color: var(--global-text-color-light);
-  }
-  /* Chart and panel stack; when the box is wide enough the panel sits to the right (see the script). */
-  .cfd-body {
-    display: grid;
-    gap: 1rem;
-  }
-  .cfd.cfd-wide .cfd-body {
-    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-    gap: 1.25rem;
-  }
-  .cfd-plot {
-    position: relative;
-    min-width: 0;
-  }
-  /* The chart is drawn at its width in pixels, so its text keeps one size. */
-  .cfd-chart {
-    display: block;
-    width: 100%;
-    touch-action: pan-y;
-    user-select: none;
-    -webkit-user-select: none;
-  }
-  .cfd-chart text {
-    font-family: inherit;
-    fill: var(--global-text-color-light);
-  }
-  .cfd-chart.cfd-can-pan {
-    cursor: grab;
-  }
-  .cfd-chart.cfd-can-jump {
-    cursor: pointer;
-  }
-  .cfd-chart.cfd-on-marker {
-    cursor: ew-resize;
-  }
-  .cfd-chart.cfd-panning {
-    cursor: grabbing;
-  }
-  .cfd-grid {
-    stroke: var(--global-divider-color);
-    stroke-width: 1;
-  }
-  .cfd-axis {
-    stroke: var(--global-text-color-light);
-    stroke-width: 1;
-  }
-  .cfd-curve {
-    transition: opacity 0.25s ease;
-  }
-  .cfd-curve.cfd-dim {
-    opacity: 0.15;
-  }
-  .cfd-mean-label {
-    font-size: 11px;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-  }
-  .cfd-curve.cfd-focus .cfd-mean-label {
-    opacity: 1;
-  }
-  /* The marker: a line through the plot and a fixed-size handle on the axis. */
-  .cfd-marker-line {
-    stroke: var(--global-text-color);
-    stroke-opacity: 0.7;
-    stroke-width: 1.5;
-  }
-  .cfd-marker {
-    outline: none;
-  }
-  .cfd-handle {
-    fill: var(--global-bg-color);
-    stroke: var(--global-text-color);
-    stroke-width: 1.5;
-  }
-  .cfd-grip {
-    stroke: var(--global-text-color);
-    stroke-width: 1.25;
-    stroke-linecap: round;
-  }
-  .cfd-marker:focus-visible .cfd-handle {
-    stroke: var(--global-theme-color);
-    stroke-width: 2.5;
-  }
-  /* Zoom buttons, in the chart's top-right corner, where the curves are low. */
-  .cfd-zoom {
-    position: absolute;
-    z-index: 2;
-    display: flex;
-    gap: 0.25rem;
-  }
-  .cfd-zoom button {
-    min-width: 1.6rem;
-    padding: 0.1rem 0.45rem;
-    border: 1px solid var(--global-divider-color);
-    border-radius: 6px;
-    background: var(--global-bg-color);
-    color: var(--global-text-color);
-    font-size: 0.72rem;
-    line-height: 1.4;
-  }
-  .cfd-zoom button:hover:not(:disabled) {
-    background: var(--cfd-tint);
-  }
-  .cfd-zoom button:disabled {
-    opacity: 0.4;
-    cursor: default;
-  }
-  /* The panel: a square grid, one block per model with its nearest sample. */
-  .cfd-panel {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-content: center;
-    gap: 0.75rem;
-    min-width: 0;
-  }
-  .cfd-panel-note {
-    grid-column: 1 / -1;
-    font-size: 0.8rem;
-    line-height: 1.4;
-    color: var(--global-text-color-light);
-  }
-  .cfd-block {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-  }
-  .cfd-head {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0 0.5rem;
-    margin-bottom: 0.2rem;
-    line-height: 1.3;
-  }
-  .cfd-name {
-    font-size: 0.9rem;
-    font-weight: 700;
-  }
-  .cfd-strip {
-    display: grid;
-    padding: 3px;
-    border: 2px solid;
-    border-radius: 8px;
-  }
-  /* A tile's images share one cell, so a new one fades in over the old. */
-  .cfd-strip img {
-    grid-area: 1 / 1;
-    display: block;
-    width: 100%;
-    height: auto;
-    aspect-ratio: 1;
-    border-radius: 3px;
-    object-fit: cover;
-    background: var(--global-divider-color);
-  }
-  .cfd-strip img.cfd-in {
-    animation: cfd-fade 0.25s ease;
-  }
-  @keyframes cfd-fade {
-    from {
+{%- assign cfd_data = include.data | default: 'chamfer_fidelity_density' -%}
+{%- assign cfd_images = include.images | default: '/assets/chamfer-fidelity/' -%}
+{%- assign cfd_note = include.note | default: 'For each model, the generated image whose distance is closest to the marker.' -%}
+{%- unless cfd_assets_added %}
+  <style>
+    .cfd {
+      margin: 2rem 0;
+      padding: 1rem 1.25rem;
+      border: 1px solid var(--global-divider-color);
+      border-radius: 14px;
+    }
+    body d-article .cfd-caption {
+      margin-top: -1.25rem;
+      color: var(--global-text-color-light);
+    }
+    /* The key, above the chart: a line per model in its colour, and the dashed line for a mean. */
+    .cfd-key {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.25rem 1rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.82rem;
+      color: var(--global-text-color);
+    }
+    .cfd-key-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .cfd-key-item svg {
+      flex: none;
+      width: 22px;
+      height: 10px;
+    }
+    .cfd-key-mean {
+      color: var(--global-text-color-light);
+    }
+    /* Chart and panel stack; when the box is wide enough the panel sits to the right (see the script). */
+    .cfd-body {
+      display: grid;
+      gap: 1rem;
+    }
+    .cfd.cfd-wide .cfd-body {
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      gap: 1.25rem;
+    }
+    .cfd-plot {
+      min-width: 0;
+    }
+    /* The chart is drawn at its width in pixels, so its text keeps one size. */
+    .cfd-chart {
+      display: block;
+      width: 100%;
+      touch-action: pan-y;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .cfd-chart text {
+      font-family: inherit;
+      fill: var(--global-text-color-light);
+    }
+    .cfd-chart.cfd-on-plot {
+      cursor: pointer;
+    }
+    .cfd-chart.cfd-on-marker,
+    .cfd-chart.cfd-dragging {
+      cursor: ew-resize;
+    }
+    /* How to use it, in the chart's top-right corner; it gives way to a mean's label while a model is highlighted. */
+    .cfd-hint {
+      transition: opacity 0.2s ease;
+    }
+    .cfd-chart.cfd-focusing .cfd-hint {
       opacity: 0;
     }
-  }
-  @media (max-width: 640px) {
-    .cfd {
-      padding: 0.9rem 0.75rem;
+    .cfd-grid {
+      stroke: var(--global-divider-color);
+      stroke-width: 1;
     }
-  }
-  @media (prefers-reduced-motion: reduce) {
+    .cfd-axis {
+      stroke: var(--global-text-color-light);
+      stroke-width: 1;
+    }
+    .cfd-curve {
+      transition: opacity 0.25s ease;
+    }
+    .cfd-curve.cfd-dim {
+      opacity: 0.15;
+    }
+    .cfd-mean-label {
+      font-size: 11px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .cfd-curve.cfd-focus .cfd-mean-label {
+      opacity: 1;
+    }
+    /* The marker: a line through the plot and a fixed-size handle on the axis. */
+    .cfd-marker-line {
+      stroke: var(--global-text-color);
+      stroke-opacity: 0.7;
+      stroke-width: 1.5;
+    }
+    .cfd-marker {
+      outline: none;
+    }
+    .cfd-handle {
+      fill: var(--global-bg-color);
+      stroke: var(--global-text-color);
+      stroke-width: 1.5;
+    }
+    .cfd-grip {
+      stroke: var(--global-text-color);
+      stroke-width: 1.25;
+      stroke-linecap: round;
+    }
+    .cfd-marker:focus-visible .cfd-handle {
+      stroke: var(--global-theme-color);
+      stroke-width: 2.5;
+    }
+    /* The panel: a note and a square grid, one block per model with its nearest sample, from the top. */
+    .cfd-panel {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-content: start;
+      gap: 0.75rem;
+      min-width: 0;
+    }
+    .cfd-panel-note {
+      grid-column: 1 / -1;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      color: var(--global-text-color-light);
+    }
+    .cfd-block {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .cfd-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0 0.5rem;
+      margin-bottom: 0.2rem;
+      line-height: 1.3;
+    }
+    .cfd-name {
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+    /* The real image of a pair: a neutral frame and label. */
+    .cfd-real .cfd-name {
+      color: var(--global-text-color-light);
+    }
+    .cfd-real .cfd-strip {
+      border-color: var(--global-text-color-light);
+    }
+    .cfd-strip {
+      display: grid;
+      padding: 3px;
+      border: 2px solid;
+      border-radius: 8px;
+    }
+    /* A tile's images share one cell, so a new one fades in over the old. */
+    .cfd-strip img {
+      grid-area: 1 / 1;
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1;
+      border-radius: 3px;
+      object-fit: cover;
+      background: var(--global-divider-color);
+    }
     .cfd-strip img.cfd-in {
-      animation: none;
+      animation: cfd-fade 0.25s ease;
     }
-  }
-</style>
+    @keyframes cfd-fade {
+      from {
+        opacity: 0;
+      }
+    }
+    @media (max-width: 640px) {
+      .cfd {
+        padding: 0.9rem 0.75rem;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .cfd-strip img.cfd-in {
+        animation: none;
+      }
+    }
+  </style>
+{%- endunless %}
 <div class="cfd l-page" data-fidelity-density>
-  <div class="cfd-top">
-    <div class="cfd-key" role="list" aria-label="Key"></div>
-    <div class="cfd-hint"></div>
-  </div>
   <div class="cfd-body">
     <div class="cfd-plot">
-      <svg class="cfd-chart" role="group" aria-label="Distance from each generated sample to its nearest real image, one curve per model"></svg>
-      <div class="cfd-zoom">
-        <button type="button" data-zoom="in" aria-label="Zoom in">+</button>
-        <button type="button" data-zoom="out" aria-label="Zoom out">−</button>
-        <button type="button" data-zoom="reset">Reset</button>
-      </div>
+      <div class="cfd-key" role="list" aria-label="Key"></div>
+      <svg class="cfd-chart" role="group"></svg>
     </div>
     <div class="cfd-panel">
-      <div class="cfd-panel-note">For each model, the generated image whose distance is closest to the marker.</div>
+      <div class="cfd-panel-note">{{ cfd_note }}</div>
     </div>
   </div>
   <script type="application/json" class="cfd-data">
     {
-      "data": {{ site.data.chamfer_fidelity_density | jsonify }},
-      "images": {{ '/assets/chamfer-samples/' | relative_url | jsonify }}
+      "data": {{ site.data[cfd_data] | jsonify }},
+      "images": {{ cfd_images | relative_url | jsonify }}
     }
   </script>
 </div>
 {%- if include.caption %}
   <div class="caption cfd-caption">{{ include.caption }}</div>
 {%- endif %}
-<script defer src="{{ '/assets/js/chamfer-fidelity-density.js' | relative_url }}"></script>
+{%- unless cfd_assets_added %}
+  <script defer src="{{ '/assets/js/chamfer-fidelity-density.js' | relative_url }}"></script>
+  {%- assign cfd_assets_added = true -%}
+{%- endunless %}
