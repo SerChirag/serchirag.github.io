@@ -4,7 +4,7 @@
   metric's numbered steps, highlights the one being carried out, narrates it in
   a commentary line, and ends on the value. Drawn by assets/js/chamfer-pentagon-sim.js, which also builds the
   tabs. Use it anywhere in a page with an include tag for
-  chamfer/pentagon-sim.liquid.
+  chamfer/pentagon-sim.liquid; pass caption="..." to put a caption under it.
 {%- endcomment -%}
 <style>
   .psim {
@@ -12,6 +12,11 @@
     padding: 1.25rem 1.25rem 1rem;
     border: 1px solid var(--global-divider-color);
     border-radius: 14px;
+  }
+  /* The optional caption sits just under the box, in the lighter text colour. */
+  body d-article .psim-caption {
+    margin-top: -1.25rem;
+    color: var(--global-text-color-light);
   }
   .psim-tabs {
     display: flex;
@@ -462,4 +467,7 @@
     <button class="psim-replay" type="button">Replay</button>
   </div>
 </div>
+{%- if include.caption %}
+  <div class="caption psim-caption">{{ include.caption }}</div>
+{%- endif %}
 <script defer src="{{ '/assets/js/chamfer-pentagon-sim.js' | relative_url }}"></script>

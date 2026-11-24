@@ -13,6 +13,11 @@
       </style>
     {% endif %}
 
+    {% if page.toc_sidebar %}
+      <!-- Optional sticky contents sidebar, opt-in via `toc_sidebar` front matter (needs `toc`) -->
+      {% include distill_toc_sidebar.liquid %}
+    {% endif %}
+
     {% if page.hero_video %}
       <!-- Optional full-bleed hero video, opt-in via `hero_video` front matter -->
       <style type="text/css">

@@ -17,15 +17,49 @@ hero_links:
     url: /assets/pdf/chamfer-poster.pdf
     icon: "fas fa-image"
 
-# A wider text column on large screens (704px is Distill's default; this gives 784px).
+# Contents in a sticky sidebar left of the text, built from the ## and ### headings.
+toc: auto
+toc_sidebar: true
+
+# One width for every section, text included: 920px, or the window less a 32px
+# margin on each side when that is narrower. 920px is a little above the
+# narrowest the simulator gets before its steps wrap and the box grows taller
+# (about 900px). Phones keep Distill's own layout.
 _styles: |
-  @media (min-width: 1280px) {
+  @media (min-width: 768px) {
     body d-title,
     body d-byline,
     body d-article,
     body d-appendix {
-      grid-template-columns: [screen-start] 1fr [page-start kicker-start] 60px [middle-start] 60px [text-start kicker-end] repeat(8, 70px) [text-end gutter-start] 60px [middle-end] 60px [page-end gutter-end] 1fr [screen-end];
+      grid-template-columns: [screen-start] minmax(0, 1fr) [page-start kicker-start kicker-end middle-start text-start] minmax(0, 920px) [text-end middle-end gutter-start gutter-end page-end] minmax(0, 1fr) [screen-end];
     }
+  }
+  /* Planning notes while the write-up is drafted; delete each one once its section is written. */
+  .plan-note {
+    margin: 0 0 1.75rem;
+    padding: 0.6rem 0.9rem;
+    border: 1px dashed var(--global-divider-color);
+    border-radius: 6px;
+    font-size: 0.9rem;
+  }
+  .plan-note::before {
+    content: "Plan";
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  body d-article .plan-note,
+  body d-article .plan-note::before,
+  body d-article .plan-note p,
+  body d-article .plan-note li {
+    color: var(--global-text-color-light);
+  }
+  body d-article .plan-note ul {
+    margin: 0;
+    padding-left: 1.1rem;
   }
 
 authors:
@@ -51,20 +85,55 @@ authors:
       name: "<a href='https://sfuapex.com/'>APEX Lab</a>, SFU &middot; Amii and CIFAR"
 ---
 
-## Abstract
+## Motivation
 
-Evaluation metrics decide which image generative models are judged better, yet widely used metrics are either uninformative or unreliable. Generative performance should be evaluated across two separate axes: the realism of the generated samples, and their coverage of the real distribution. Most popular metrics, including FID and KID, report a single symmetric score that conflates these two axes, which makes diagnosing and comparing models hard. A second family of metrics addresses this limitation by reporting along the two axes separately. We call such metrics disentangled, and they include Precision/Recall and Density/Coverage. However, we show that existing disentangled metrics approximate empirical distributions with oversized volumes, which can cause them to admit off-manifold samples. This causes these metrics to respond unreliably to simple distributional changes and image distortions. We propose Chamfer distance, an intuitive disentangled metric that directly measures cross-set nearest-neighbor distances between real and generated samples. We show that the resulting one-sided distances provide interpretable signals for fidelity and diversity, respond reliably to simple distributional changes, while remaining computationally efficient.
+In the last decade, image generation models have improved significantly. Because judging a model requires thousands of its generated images, it is infeasible to check each generated image visually. AI researchers rely on automated evaluation metrics to help them decide which model is doing better.
 
-<!-- Two-pentagon simulator: placed here for preview; move it wherever it fits in the write-up. -->
+These metrics play a crucial role: they decide which tradeoffs are made visible, which models are judged better and in which direction the field moves.
 
-{% include chamfer/pentagon-sim.liquid %}
+In this paper, we show that existing popular evaluation metrics are fundamentally broken: they are either unreliable or uninformative. To illustrate this point, consider a simple 2D example: two sets of pentagons. Let us see how existing metrics perform on this simple test.
+
+{% include chamfer/pentagon-sim.liquid caption="A simple 2D test. Choose a metric to see how it compares the real and generated samples, step by step." %}
+
+{% comment %}
+The sections below are drafts, hidden from the built page until they are
+written. Move this comment tag down past a section to publish it.
+
+## Distributional
+
+<div class="plan-note" markdown="1">
+- Examples
+- Conflation: 2D example maybe
+- Then the IMM vs BigGAN
+</div>
+
+## Disentangled
+
+<div class="plan-note" markdown="1">
+- Why they exist. Formulation
+- Problems, refer to the 2D pentagon
+- Image distortion
+</div>
+
+## Chamfer
+
+<div class="plan-note" markdown="1">
+- Intuition, using the butterfly
+- Formulation: just give the formula
+</div>
+
+## Benchmarking modern models
+
+<div class="plan-note" markdown="1">
+- TBD
+</div>
+
+## Interpretability of Chamfer
+
+<div class="plan-note" markdown="1">
+- TBD
+</div>
 
 Code and a full write-up are coming soon.
 
-## Poster
-
-Won the Best Student Poster award at [SFU CS Research Day 2026](https://events.sfu.ca/event/50323-cs-research-day-2026).
-
-{% include figure.liquid loading="eager" zoomable=true path="assets/img/chamfer/poster.jpg" class="img-fluid rounded z-depth-1" alt="Poster for The Fault in Our Metrics" avoid_scaling=true %}
-
-[Download the poster (PDF)]({{ '/assets/pdf/chamfer-poster.pdf' | relative_url }})
+{% endcomment %}

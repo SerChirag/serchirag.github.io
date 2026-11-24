@@ -1,0 +1,95 @@
+{% comment %}
+  Contents sidebar for distill pages. Opt in with `toc_sidebar: true` next to
+  `toc` in the front matter. The layout renders the list into <d-contents>; this
+  restyles it as a sticky column left of the text. The script moves it out of
+  d-article first, because d-article's `contain: layout` would otherwise pin it
+  to the article instead of the window, and then places it. It stays hidden
+  until placed, and wherever there is no room beside the text.
+{% endcomment %}
+<style type="text/css">
+  body d-article d-contents {
+    display: none;
+  }
+  d-contents.toc-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 5;
+    display: block;
+    width: 200px;
+    margin: 0;
+    padding: 0.25rem 0;
+    border: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    visibility: hidden;
+    opacity: 0;
+    transition:
+      opacity 0.3s ease,
+      visibility 0.3s;
+  }
+  d-contents.toc-sidebar.toc-on {
+    visibility: visible;
+    opacity: 1;
+  }
+  d-contents.toc-sidebar nav {
+    display: block;
+    border-left: 1px solid var(--global-divider-color);
+    font-size: 0.8rem;
+    line-height: 1.35;
+  }
+  d-contents.toc-sidebar nav h3 {
+    margin: 0 0 0.5rem;
+    padding-left: 0.9rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--global-text-color-light);
+  }
+  d-contents.toc-sidebar nav div,
+  d-contents.toc-sidebar nav ul,
+  d-contents.toc-sidebar nav li {
+    margin: 0;
+    padding: 0;
+    font-weight: 400;
+    list-style: none;
+  }
+  d-contents.toc-sidebar nav a {
+    display: block;
+    margin-left: -1px;
+    padding: 0.28rem 0 0.28rem 0.9rem;
+    border-left: 2px solid transparent;
+    border-bottom: 0 !important;
+    color: var(--global-text-color-light) !important;
+    text-decoration: none;
+    transition:
+      color 0.2s,
+      border-color 0.2s;
+  }
+  d-contents.toc-sidebar nav li a {
+    padding-left: 1.6rem;
+    font-size: 0.75rem;
+  }
+  d-contents.toc-sidebar nav a:hover {
+    border-bottom: 0 !important;
+    color: var(--global-text-color) !important;
+  }
+  d-contents.toc-sidebar nav a.toc-active {
+    border-left-color: var(--global-text-color);
+    color: var(--global-text-color) !important;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    d-contents.toc-sidebar,
+    d-contents.toc-sidebar nav a {
+      transition: none;
+    }
+  }
+  @media print {
+    d-contents.toc-sidebar {
+      display: none;
+    }
+  }
+</style>
+<script defer src="{{ '/assets/js/distill-toc-sidebar.js' | relative_url }}"></script>
