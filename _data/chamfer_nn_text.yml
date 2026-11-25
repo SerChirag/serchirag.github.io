@@ -1,0 +1,78 @@
+# The words of the two nearest-neighbour explorers on the Chamfer page
+# (_includes/chamfer/nn-explorer.liquid). Edit freely; the images and distances
+# are in chamfer_nn_examples.json.
+#
+#   intro       the bold words that open the line at the top
+#   test        the rest of that line. <b class="nnx-gen"> and <b class="nnx-real">
+#               colour a word as generated (orange) or real (blue).
+#   pick        the label beside the three query images the reader picks from
+#   query       the label over the query image
+#   neighbours  the label over its three nearest neighbours
+#   axis        the label under the distance line
+#   distance    the comment's first sentence; {size} becomes the size below, in bold
+#   levels      one per query image, closest first:
+#                 size     how far its nearest neighbour is
+#                 says     what that means, with no full stop: it is followed by
+#                          a colon and the note, or by a full stop if there is none.
+#                          Keep each whole comment within two lines (about 215
+#                          characters) so it fits the 920px page in two lines.
+#   notes       per class, one per query image, closest first: what to see in those
+#               images. Each follows a colon, so it starts in lower case.
+
+fidelity:
+  intro: "Intuition behind Fidelity:"
+  test: 'For a <b class="nnx-gen">generated</b> image, find its nearest neighbours in the <b class="nnx-real">real</b> set.'
+  pick: Pick a generated image
+  query: Generated
+  neighbours: Its nearest real images
+  axis: Distance to the real image
+  distance: The distance of the generated image to its nearest neighbour is {size}.
+  levels:
+    - size: small
+      says: The image looks realistic
+    - size: large
+      says: The image looks less realistic
+    - size: very large
+      says: The image does not look like any real image
+  notes:
+    butterfly:
+      - a sharp wing pattern and a clean body.
+      - the wings overlap oddly, and their black edges turn purple.
+      - the wings are smeared, with no clear body and few white spots.
+    lizard:
+      - a crisp agama, with an orange head and a blue body.
+      - the legs turn into blue lumps, and an extra lump sticks out of its side.
+      - there is no single lizard; lizard-like shapes melt into the rock.
+    planes:
+      - a jet against a plain sky, much like real air-show photos.
+      - the cockpit and wings blur into the body.
+      - the wings and body cross at impossible angles.
+
+coverage:
+  intro: "Intuition behind Coverage:"
+  test: 'For a <b class="nnx-real">real</b> image, find its nearest neighbours in the <b class="nnx-gen">generated</b> set.'
+  pick: Pick a real image
+  query: Real
+  neighbours: Its nearest generated images
+  axis: Distance to the generated image
+  distance: The distance of the real image to its nearest neighbour is {size}.
+  levels:
+    - size: small
+      says: This implies the real image is covered by the generator
+    - size: large
+      says: This implies the real image is only partly covered by the generator
+    - size: very large
+      says: This implies the real image is not covered by the generator
+  notes:
+    butterfly:
+      - open wings seen from above, a common pose among the generated images.
+      - the generated monarchs have the white background, but not the chipped wings.
+      - the generated monarchs sit on thistles, but none holds its wings straight up.
+    lizard:
+      - an agama on a rock, a common scene among the generated images.
+      - the generated close-ups of lizard heads are never this pink.
+      - the generated lizards climb branches, but none sits on a bare twig against the sky.
+    planes:
+      - a jet on a runway, seen side-on, a common scene among the generated images.
+      - the generated planes fly with their wheels down, but none is red.
+      - the generated aircraft are tangles of wings and rotors; none is a clear helicopter.

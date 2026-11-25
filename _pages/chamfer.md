@@ -115,12 +115,16 @@ written. Move a section out of this block to publish it.
 - Image distortion
 </div>
 
+{% endcomment %}
+
 ## Chamfer
 
-<div class="plan-note" markdown="1">
-- Intuition, using the butterfly
-- Formulation: just give the formula
-</div>
+{% include chamfer/nn-explorer.liquid direction="fidelity" caption="Generated images are samples from IMM-XL with 8 steps (Zhou et al., 2025), and real images are from ImageNet-1K. We use Inception-v3 features to find the nearest neighbours." %}
+
+{% include chamfer/nn-explorer.liquid direction="coverage" caption="Generated images are samples from IMM-XL with 8 steps (Zhou et al., 2025), and real images are from ImageNet-1K. We use Inception-v3 features to find the nearest neighbours." %}
+
+{% comment %}
+Still to write in the Chamfer section: the formulation (just give the formula).
 
 ## Benchmarking modern models
 

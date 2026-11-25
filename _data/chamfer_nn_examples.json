@@ -1,0 +1,360 @@
+{
+  "fidelity": {
+    "classes": [
+      {
+        "id": "butterfly",
+        "name": "Butterfly",
+        "plural": "butterflies",
+        "levels": [
+          {
+            "query": "fidelity/butterfly/1-query.webp",
+            "neighbours": [
+              {
+                "file": "fidelity/butterfly/1-nn1.webp",
+                "d": 2.8
+              },
+              {
+                "file": "fidelity/butterfly/1-nn2.webp",
+                "d": 3.05
+              },
+              {
+                "file": "fidelity/butterfly/1-nn3.webp",
+                "d": 3.14
+              }
+            ]
+          },
+          {
+            "query": "fidelity/butterfly/2-query.webp",
+            "neighbours": [
+              {
+                "file": "fidelity/butterfly/2-nn1.webp",
+                "d": 4.18
+              },
+              {
+                "file": "fidelity/butterfly/2-nn2.webp",
+                "d": 4.33
+              },
+              {
+                "file": "fidelity/butterfly/2-nn3.webp",
+                "d": 4.38
+              }
+            ]
+          },
+          {
+            "query": "fidelity/butterfly/3-query.webp",
+            "neighbours": [
+              {
+                "file": "fidelity/butterfly/3-nn1.webp",
+                "d": 8.84
+              },
+              {
+                "file": "fidelity/butterfly/3-nn2.webp",
+                "d": 9.27
+              },
+              {
+                "file": "fidelity/butterfly/3-nn3.webp",
+                "d": 9.43
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "lizard",
+        "name": "Lizard",
+        "plural": "lizards",
+        "levels": [
+          {
+            "query": "fidelity/lizard/1-query.webp",
+            "neighbours": [
+              {
+                "file": "fidelity/lizard/1-nn1.webp",
+                "d": 3.59
+              },
+              {
+                "file": "fidelity/lizard/1-nn2.webp",
+                "d": 3.92
+              },
+              {
+                "file": "fidelity/lizard/1-nn3.webp",
+                "d": 4.02
+              }
+            ]
+          },
+          {
+            "query": "fidelity/lizard/2-query.webp",
+            "neighbours": [
+              {
+                "file": "fidelity/lizard/2-nn1.webp",
+                "d": 5.51
+              },
+              {
+                "file": "fidelity/lizard/2-nn2.webp",
+                "d": 5.54
+              },
+              {
+                "file": "fidelity/lizard/2-nn3.webp",
+                "d": 5.7
+              }
+            ]
+          },
+          {
+            "query": "fidelity/lizard/3-query.webp",
+            "neighbours": [
+              {
+                "file": "fidelity/lizard/3-nn1.webp",
+                "d": 14.88
+              },
+              {
+                "file": "fidelity/lizard/3-nn2.webp",
+                "d": 15.04
+              },
+              {
+                "file": "fidelity/lizard/3-nn3.webp",
+                "d": 15.39
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "planes",
+        "name": "Warplane",
+        "plural": "warplanes",
+        "levels": [
+          {
+            "query": "fidelity/planes/1-query.webp",
+            "neighbours": [
+              {
+                "file": "fidelity/planes/1-nn1.webp",
+                "d": 4.7
+              },
+              {
+                "file": "fidelity/planes/1-nn2.webp",
+                "d": 4.76
+              },
+              {
+                "file": "fidelity/planes/1-nn3.webp",
+                "d": 5.05
+              }
+            ]
+          },
+          {
+            "query": "fidelity/planes/2-query.webp",
+            "neighbours": [
+              {
+                "file": "fidelity/planes/2-nn1.webp",
+                "d": 6.12
+              },
+              {
+                "file": "fidelity/planes/2-nn2.webp",
+                "d": 6.26
+              },
+              {
+                "file": "fidelity/planes/2-nn3.webp",
+                "d": 6.26
+              }
+            ]
+          },
+          {
+            "query": "fidelity/planes/3-query.webp",
+            "neighbours": [
+              {
+                "file": "fidelity/planes/3-nn1.webp",
+                "d": 15.33
+              },
+              {
+                "file": "fidelity/planes/3-nn2.webp",
+                "d": 15.57
+              },
+              {
+                "file": "fidelity/planes/3-nn3.webp",
+                "d": 15.83
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "coverage": {
+    "classes": [
+      {
+        "id": "butterfly",
+        "name": "Butterfly",
+        "plural": "butterflies",
+        "levels": [
+          {
+            "query": "coverage/butterfly/1-query.webp",
+            "neighbours": [
+              {
+                "file": "coverage/butterfly/1-nn1.webp",
+                "d": 3.04
+              },
+              {
+                "file": "coverage/butterfly/1-nn2.webp",
+                "d": 3.06
+              },
+              {
+                "file": "coverage/butterfly/1-nn3.webp",
+                "d": 3.28
+              }
+            ]
+          },
+          {
+            "query": "coverage/butterfly/2-query.webp",
+            "neighbours": [
+              {
+                "file": "coverage/butterfly/2-nn1.webp",
+                "d": 4.42
+              },
+              {
+                "file": "coverage/butterfly/2-nn2.webp",
+                "d": 4.98
+              },
+              {
+                "file": "coverage/butterfly/2-nn3.webp",
+                "d": 5.07
+              }
+            ]
+          },
+          {
+            "query": "coverage/butterfly/3-query.webp",
+            "neighbours": [
+              {
+                "file": "coverage/butterfly/3-nn1.webp",
+                "d": 7.76
+              },
+              {
+                "file": "coverage/butterfly/3-nn2.webp",
+                "d": 7.91
+              },
+              {
+                "file": "coverage/butterfly/3-nn3.webp",
+                "d": 8.13
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "lizard",
+        "name": "Lizard",
+        "plural": "lizards",
+        "levels": [
+          {
+            "query": "coverage/lizard/1-query.webp",
+            "neighbours": [
+              {
+                "file": "coverage/lizard/1-nn1.webp",
+                "d": 3.53
+              },
+              {
+                "file": "coverage/lizard/1-nn2.webp",
+                "d": 3.7
+              },
+              {
+                "file": "coverage/lizard/1-nn3.webp",
+                "d": 3.71
+              }
+            ]
+          },
+          {
+            "query": "coverage/lizard/2-query.webp",
+            "neighbours": [
+              {
+                "file": "coverage/lizard/2-nn1.webp",
+                "d": 6.48
+              },
+              {
+                "file": "coverage/lizard/2-nn2.webp",
+                "d": 6.49
+              },
+              {
+                "file": "coverage/lizard/2-nn3.webp",
+                "d": 6.79
+              }
+            ]
+          },
+          {
+            "query": "coverage/lizard/3-query.webp",
+            "neighbours": [
+              {
+                "file": "coverage/lizard/3-nn1.webp",
+                "d": 15.8
+              },
+              {
+                "file": "coverage/lizard/3-nn2.webp",
+                "d": 16.42
+              },
+              {
+                "file": "coverage/lizard/3-nn3.webp",
+                "d": 16.43
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "planes",
+        "name": "Warplane",
+        "plural": "warplanes",
+        "levels": [
+          {
+            "query": "coverage/planes/1-query.webp",
+            "neighbours": [
+              {
+                "file": "coverage/planes/1-nn1.webp",
+                "d": 4.78
+              },
+              {
+                "file": "coverage/planes/1-nn2.webp",
+                "d": 4.84
+              },
+              {
+                "file": "coverage/planes/1-nn3.webp",
+                "d": 4.91
+              }
+            ]
+          },
+          {
+            "query": "coverage/planes/2-query.webp",
+            "neighbours": [
+              {
+                "file": "coverage/planes/2-nn1.webp",
+                "d": 7.19
+              },
+              {
+                "file": "coverage/planes/2-nn2.webp",
+                "d": 7.31
+              },
+              {
+                "file": "coverage/planes/2-nn3.webp",
+                "d": 7.33
+              }
+            ]
+          },
+          {
+            "query": "coverage/planes/3-query.webp",
+            "neighbours": [
+              {
+                "file": "coverage/planes/3-nn1.webp",
+                "d": 13.74
+              },
+              {
+                "file": "coverage/planes/3-nn2.webp",
+                "d": 13.76
+              },
+              {
+                "file": "coverage/planes/3-nn3.webp",
+                "d": 13.98
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "x_max": 18,
+  "source": "Figures 6 and 7 of the paper (Chamfer-Overleaf/figures/{precision,recall}_figure): IMM-XL (8 steps) against ImageNet-1K, distances in Inception-v3 feature space; loaded by bin/chamfer_nn_examples.py"
+}
