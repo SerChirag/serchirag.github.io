@@ -251,7 +251,10 @@
         <d-citation-list></d-citation-list>
       </d-appendix>
 
-      <d-bibliography src="{{ page.bibliography | prepend: '/assets/bibliography/' | relative_url }}"></d-bibliography>
+      {% comment %} Only when the page names a .bib file: without one, the request would fetch the 404 page and fail to parse it. {% endcomment %}
+      {% if page.bibliography %}
+        <d-bibliography src="{{ page.bibliography | prepend: '/assets/bibliography/' | relative_url }}"></d-bibliography>
+      {% endif %}
 
       <d-article>
         {% if site.related_blog_posts and site.related_blog_posts.enabled %}
