@@ -11,37 +11,40 @@
     data     the _data file to draw (default chamfer_fidelity_density). Each
              sample has `d` and `file`; samples with `real` too are shown as pairs.
              bin/chamfer_figure_data.py writes these files from the paper's export.
+             A file with `classes` (each an id, a name and its own `models`, the
+             same models in each) gets a dropdown to pick the class.
     images   the folder that `file` and `real` are relative to
              (default /assets/chamfer-fidelity/)
     note     the line above the grid
+    stack    the images in one column beside the chart, one above the
+             other, so the chart can be wider and shorter (for two models)
     caption  a caption under the box
 
   Only the images on show are loaded. The styles and script are added once per
-  page, however many of these the page has.
+  page, however many of these the page has. The frame, the dropdown and its
+  label come from chamfer/controls.liquid.
 {%- endcomment -%}
 {%- assign cfd_data = include.data | default: 'chamfer_fidelity_density' -%}
 {%- assign cfd_images = include.images | default: '/assets/chamfer-fidelity/' -%}
 {%- assign cfd_note = include.note | default: 'For each model, the generated image whose distance is closest to the marker.' -%}
+{% include chamfer/controls.liquid %}
 {%- unless cfd_assets_added %}
   <style>
-    .cfd {
-      margin: 2rem 0;
-      padding: 1rem 1.25rem;
-      border: 1px solid var(--global-divider-color);
-      border-radius: 14px;
+    /* Above the chart: the class dropdown (when the data has classes), then the key. */
+    .cfd-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.4rem 1.25rem;
+      margin-bottom: 0.75rem;
     }
-    body d-article .cfd-caption {
-      margin-top: -1.25rem;
-      color: var(--global-text-color-light);
-    }
-    /* The key, above the chart: a line per model in its colour, and the dashed line for a mean. */
+    /* The key: a line per model in its colour, and the dashed line for a mean. */
     .cfd-key {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       gap: 0.25rem 1rem;
-      margin-bottom: 0.5rem;
-      font-size: 0.82rem;
+      font-size: 0.75rem;
       color: var(--global-text-color);
     }
     .cfd-key-item {
@@ -65,6 +68,25 @@
     .cfd.cfd-wide .cfd-body {
       grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
       gap: 1.25rem;
+    }
+    /* The images in one column (stack) beside a wider chart. The script sets the image's size and
+       the panel's top padding, so the column starts level with the plot, and moves the note under the key. */
+    .cfd.cfd-beside .cfd-body {
+      grid-template-columns: minmax(0, 1fr) var(--cfd-tile, 150px);
+    }
+    .cfd.cfd-beside .cfd-panel {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    /* The theme script animates every property for a moment when a page loads (html.transition);
+       the layout is set then, so the image column and the marker's handle (whose y is a CSS
+       property) would slide into place. */
+    html.transition .cfd .cfd-body,
+    html.transition .cfd .cfd-panel,
+    html.transition .cfd-chart * {
+      transition: none !important;
+    }
+    .cfd-bar .cfd-panel-note {
+      flex-basis: 100%;
     }
     .cfd-plot {
       min-width: 0;
@@ -203,11 +225,6 @@
         opacity: 0;
       }
     }
-    @media (max-width: 640px) {
-      .cfd {
-        padding: 0.9rem 0.75rem;
-      }
-    }
     @media (prefers-reduced-motion: reduce) {
       .cfd-strip img.cfd-in {
         animation: none;
@@ -215,10 +232,16 @@
     }
   </style>
 {%- endunless %}
-<div class="cfd l-page" data-fidelity-density>
+<div class="cfd ch-box l-page{% if include.stack %} cfd-stack{% endif %}" data-fidelity-density>
   <div class="cfd-body">
     <div class="cfd-plot">
-      <div class="cfd-key" role="list" aria-label="Key"></div>
+      <div class="cfd-bar">
+        <label class="cfd-pick ch-field" hidden>
+          <span class="ch-label">Class</span>
+          <span class="ch-select"><select class="cfd-class"></select></span>
+        </label>
+        <div class="cfd-key" role="list" aria-label="Key"></div>
+      </div>
       <svg class="cfd-chart" role="group"></svg>
     </div>
     <div class="cfd-panel">
@@ -233,7 +256,7 @@
   </script>
 </div>
 {%- if include.caption %}
-  <div class="caption cfd-caption">{{ include.caption }}</div>
+  <div class="caption ch-caption">{{ include.caption }}</div>
 {%- endif %}
 {%- unless cfd_assets_added %}
   <script defer src="{{ '/assets/js/chamfer-fidelity-density.js' | relative_url }}"></script>

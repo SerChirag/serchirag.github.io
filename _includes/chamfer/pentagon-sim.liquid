@@ -5,48 +5,15 @@
   a commentary line, and ends on the value. Drawn by assets/js/chamfer-pentagon-sim.js, which also builds the
   tabs. Use it anywhere in a page with an include tag for
   chamfer/pentagon-sim.liquid; pass caption="..." to put a caption under it.
+  The frame, tabs and Replay button come from chamfer/controls.liquid.
 {%- endcomment -%}
+{% include chamfer/controls.liquid %}
 <style>
-  .psim {
-    margin: 2rem 0;
-    padding: 1.25rem 1.25rem 1rem;
-    border: 1px solid var(--global-divider-color);
-    border-radius: 14px;
-  }
-  /* The optional caption sits just under the box, in the lighter text colour. */
-  body d-article .psim-caption {
-    margin-top: -1.25rem;
-    color: var(--global-text-color-light);
-  }
   .psim-tabs {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
     gap: 0.5rem;
-    margin-bottom: 1rem;
-  }
-  .psim button {
-    font: inherit;
-    cursor: pointer;
-  }
-  .psim-tab,
-  .psim-replay {
-    border: 1px solid var(--global-theme-color);
-    border-radius: 999px;
-    padding: 0.3rem 1rem;
-    font-size: 0.9rem;
-    color: var(--global-theme-color);
-    background: transparent;
-  }
-  .psim-tab[aria-selected='true'] {
-    color: var(--global-bg-color);
-    background: var(--global-theme-color);
-  }
-  /* Hover on an unselected tab is only a light tint, so it never looks selected. */
-  .psim-tab:not([aria-selected='true']):hover,
-  .psim-replay:hover {
-    background: rgba(85, 63, 195, 0.1);
-    background: color-mix(in srgb, var(--global-theme-color) 12%, transparent);
+    margin-bottom: 0.75rem;
   }
   /* Figure and steps side by side; under them, the legend (below the points) and Replay (bottom right).
      On a phone they stack: figure, legend, steps, Replay. */
@@ -60,28 +27,23 @@
     --psim-ours-ink: #1c1c1d;
   }
   .psim-tab.psim-tab-ours {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
     border-color: var(--psim-ours);
     font-weight: 600;
     color: var(--psim-ours);
   }
-  /* The site colours every span with the text colour; inside a tab, follow the tab. */
-  .psim-tab span {
-    color: inherit;
-  }
   .psim-tab.psim-tab-ours[aria-selected='true'] {
+    border-color: var(--psim-ours);
     color: var(--psim-ours-ink);
-    background: var(--psim-ours);
+    background-color: var(--psim-ours);
   }
   .psim-tab.psim-tab-ours:not([aria-selected='true']):hover {
-    background: rgba(161, 98, 7, 0.1);
-    background: color-mix(in srgb, var(--psim-ours) 14%, transparent);
+    background-color: rgba(161, 98, 7, 0.1);
+    background-color: color-mix(in srgb, var(--psim-ours) 14%, var(--global-bg-color));
   }
   .psim-crown {
-    width: 1.05em;
-    height: 1.05em;
+    flex: none;
+    width: 1.1em;
+    height: 1.1em;
     fill: currentColor;
   }
   .psim-ours {
@@ -96,6 +58,11 @@
     line-height: 1.4;
     letter-spacing: 0.06em;
     text-transform: uppercase;
+  }
+  .psim-tab .psim-ours {
+    padding: 0.05em 0.4em;
+    font-size: 0.75em;
+    line-height: 1.2;
   }
   .psim-title .psim-ours {
     margin-left: 0.3rem;
@@ -182,7 +149,7 @@
   }
   .psim-steps li.psim-group {
     margin: 0.7rem 0 0.3rem;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -306,7 +273,7 @@
     color: var(--global-text-color-light);
   }
   .psim-legend {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--global-text-color-light);
     grid-area: legend;
     display: flex;
@@ -441,7 +408,7 @@
   }
 </style>
 
-<div class="psim l-page" data-pentagon-sim>
+<div class="psim ch-box l-page" data-pentagon-sim>
   <div class="psim-tabs" role="tablist" aria-label="Choose a metric"></div>
   <div class="psim-body">
     <svg
@@ -464,10 +431,10 @@
       <span class="psim-key-real">Real samples</span>
       <span class="psim-key-gen">Generated samples</span>
     </div>
-    <button class="psim-replay" type="button">Replay</button>
+    <button class="psim-replay ch-btn" type="button">Replay</button>
   </div>
 </div>
 {%- if include.caption %}
-  <div class="caption psim-caption">{{ include.caption }}</div>
+  <div class="caption ch-caption">{{ include.caption }}</div>
 {%- endif %}
 <script defer src="{{ '/assets/js/chamfer-pentagon-sim.js' | relative_url }}"></script>

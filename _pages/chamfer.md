@@ -125,16 +125,15 @@ written. Move a section out of this block to publish it.
 
 {% comment %}
 Still to write in the Chamfer section: the formulation (just give the formula).
+{% endcomment %}
 
 ## Benchmarking modern models
 
-<div class="plan-note" markdown="1">
-- TBD
-</div>
-
-{% endcomment %}
+{% include chamfer/ranking-chart.liquid caption="Chamfer-Fidelity and Chamfer-Coverage on ImageNet 256, from 100K generated samples and DINOv2-Giant features. Both axes use the same scale, lower is better on both, and marker area is proportional to the number of parameters. Hover over a model to see its samples; click to keep them in view." %}
 
 ## Interpretability of Chamfer
+
+{% include chamfer/fidelity-density.liquid data="chamfer_class_density" images="/assets/chamfer-class/" stack=true %}
 
 {% include chamfer/fidelity-density.liquid %}
 

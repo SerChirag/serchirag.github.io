@@ -169,7 +169,7 @@
     const tabs = VIEWS.map((v) => {
       const b = document.createElement("button");
       b.type = "button";
-      b.className = "psim-tab";
+      b.className = "psim-tab ch-btn";
       b.setAttribute("role", "tab");
       if (v.ours) {
         b.classList.add("psim-tab-ours");

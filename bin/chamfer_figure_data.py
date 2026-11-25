@@ -16,13 +16,19 @@ Reads:
   fig12/curves.csv  model,x,percent
   fig12/real/       the real images
   fig12/<model>/    the generated images
+  fig10/fig10.csv   class,model,file,distance (if the export has it; see
+                    ~/Desktop/Chamfer/Blog/FIGURE10_DATA_SPEC.md)
+  fig10/curves.csv  class,model,x,percent
+  fig10/<class>/<model>/  the generated images
 
 Writes:
   assets/chamfer-fidelity/<model>/<name>.webp   Figure 11's images
   assets/chamfer-coverage/<model>/<name>.webp   Figure 12's generated images
   assets/chamfer-coverage/real/<name>.webp      Figure 12's real images
+  assets/chamfer-class/<class>/<model>/<name>.webp  Figure 10's images
   _data/chamfer_fidelity_density.json           Figure 11's curves and samples
   _data/chamfer_coverage_density.json           Figure 12's curves and samples
+  _data/chamfer_class_density.json              Figure 10's curves and samples, per class
 
 The two image folders are emptied first. Images become WebP (quality 82), no
 larger than 256 px. Everything the charts draw comes from the export: the
@@ -30,6 +36,11 @@ curves, the samples, each model's mean (the curve's centre of mass, which
 matches the mean over all samples to within 0.0005) and the length of the
 distance axis (the curves' range, rounded up to 0.1). Labels, model names and
 colours stay as they are in the JSON files.
+
+Figure 10's means are the README's (its checks list each class and model's mean
+over all 1,000 samples). Its curves are wider and cut at 1.3, so their centre of
+mass falls short of the true mean by up to 0.001; the curve is used only for a
+class and model the README does not list.
 
 Needs Pillow (pip install Pillow).
 """
@@ -74,10 +85,10 @@ def curve_mean(pts):
     return sum(x * y for x, y in pts) / area
 
 
-def curves(path):
+def curves(rows):
     """Each model's curve, thinned to every CURVE_STEP-th point, with its mean and range."""
     by_model = defaultdict(list)
-    for row in read_csv(path):
+    for row in rows:
         by_model[row["model"]].append((float(row["x"]), float(row["percent"])))
     out = {}
     for model, pts in by_model.items():
@@ -100,7 +111,7 @@ def webp_name(name):
 def load(json_path, curve_path, samples_by_model, note):
     """Replace the curves and samples in a data file, keeping everything else."""
     data = json.loads(json_path.read_text())
-    new_curves = curves(curve_path)
+    new_curves = curves(read_csv(curve_path))
     for m in data["models"]:
         mid = m["id"]
         if mid not in new_curves or mid not in samples_by_model:
@@ -118,6 +129,57 @@ def load(json_path, curve_path, samples_by_model, note):
         "(sample_interpret/export_figure_data.py), loaded by bin/chamfer_figure_data.py"
     )
     data["samples_note"] = note
+    json_path.write_text(json.dumps(data, indent=2) + "\n")
+
+
+def readme_means(path):
+    """Figure 10's mean over all samples, per (class, model), from the README's checks:
+    lines like "- macaw / imeanflow: 21 images ...; mean over all 0.4089 (PDF 0.409) PASS"."""
+    if not path.exists():
+        return {}
+    means = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        m = re.match(r"\s*-\s*([\w-]+) / ([\w-]+):.*?mean over all ([\d.]+)", line)
+        if m:
+            means[(m[1], m[2])] = float(m[3])
+    return means
+
+
+def load_classes(json_path, src10, out10, means):
+    """Replace each class's curves and samples in Figure 10's data file, keeping names and colours."""
+    data = json.loads(json_path.read_text())
+    shutil.rmtree(out10, ignore_errors=True)
+    samples = defaultdict(list)
+    for row in read_csv(src10 / "fig10.csv"):
+        cls, model = row["class"], row["model"]
+        name = to_webp(src10 / cls / model / row["file"], out10 / cls / model / webp_name(row["file"]))
+        samples[(cls, model)].append({"file": f"{cls}/{model}/{name}", "d": round(float(row["distance"]), 5)})
+    rows_by_class = defaultdict(list)
+    for row in read_csv(src10 / "curves.csv"):
+        rows_by_class[row["class"]].append(row)
+    x_end = 0
+    for c in data["classes"]:
+        new_curves = curves(rows_by_class.get(c["id"], []))
+        for m in c["models"]:
+            key = (c["id"], m["id"])
+            if m["id"] not in new_curves or key not in samples:
+                sys.exit(f"{json_path.name}: no curve or samples for {c['id']!r} / {m['id']!r} in the export")
+            m["curve"] = new_curves[m["id"]]["curve"]
+            m["mean"] = round(means.get(key, new_curves[m["id"]]["mean"]), 3)
+            m["samples"] = sorted(samples[key], key=lambda s: s["d"])
+            x_end = max(x_end, new_curves[m["id"]]["x_end"])
+            source = "" if key in means else " (from the curve: not in the README)"
+            print(f"  {c['name']:<16} {m['name']:<11} {len(m['samples']):>3} samples, mean {m['mean']}{source}")
+    data["x_max"] = math.ceil(x_end * 10 - 1e-9) / 10
+    data["source"] = (
+        "Figure 10 of the paper; curves and samples from the paper's export "
+        "(sample_interpret/export_figure_data.py), loaded by bin/chamfer_figure_data.py"
+    )
+    data["samples_note"] = (
+        "One generated sample drawn at random (seed 0) from each of 25 equal bins of distance in [0, 1.3), "
+        "per class and model; "
+        "file is relative to the images folder."
+    )
     json_path.write_text(json.dumps(data, indent=2) + "\n")
 
 
@@ -167,7 +229,18 @@ def main():
         "with the model's generated sample nearest to it; real and file are relative to the images folder.",
     )
 
-    for folder in (out11, out12):
+    # Figure 10: per class, one generated image per sample. Optional: older exports lack it,
+    # and the page then keeps the stand-in read from the paper's PDFs.
+    out10 = ROOT / "assets" / "chamfer-class"
+    if (src / "fig10" / "fig10.csv").exists():
+        print("Figure 10:")
+        load_classes(ROOT / "_data" / "chamfer_class_density.json", src / "fig10", out10, readme_means(src / "README.md"))
+    else:
+        print("Figure 10: not in this export; left as it is")
+
+    for folder in (out11, out12, out10):
+        if not folder.exists():
+            continue
         files = list(folder.rglob("*.webp"))
         size = sum(f.stat().st_size for f in files)
         print(f"{folder.relative_to(ROOT)}: {len(files)} images, {size / 1e6:.1f} MB")

@@ -1,0 +1,160 @@
+{%- comment -%}
+  The look every Chamfer figure shares, so their frames, buttons, tabs,
+  dropdowns and labels read as one set: pills 1.9rem tall (30px) with a
+  hairline border and 0.85rem medium text, the size of the hero's Paper and
+  Poster buttons; the theme colour only for the tab that is picked and for
+  keyboard focus. Each figure includes this file; the styles are added once
+  per page.
+
+  Classes:
+    ch-box      a figure's frame; ch-caption is the caption under it
+    ch-btn      a button: an action, a filter chip, or a tab (the picked one
+                has aria-selected="true" and is filled)
+    ch-select   a wrapper round a <select>; it draws the chevron
+    ch-menu     a <details> whose <summary> is a ch-btn; it gets the chevron
+    ch-field    a label and its control on one line
+    ch-label    a small label in capitals, for a control or a group
+{%- endcomment -%}
+{%- unless ch_controls_added %}
+  <style>
+    .ch-box {
+      margin: 2rem 0;
+      padding: 1rem 1.25rem;
+      border: 1px solid var(--global-divider-color);
+      border-radius: 14px;
+    }
+    body d-article .ch-caption {
+      margin-top: -1.25rem;
+      color: var(--global-text-color-light);
+    }
+    @media (max-width: 640px) {
+      .ch-box {
+        padding: 0.9rem 0.75rem;
+      }
+    }
+    .ch-field {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      margin: 0;
+    }
+    .ch-field[hidden] {
+      display: none;
+    }
+    .ch-label {
+      margin: 0;
+      font-size: 0.7rem;
+      font-weight: 600;
+      line-height: 1.3;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--global-text-color-light);
+    }
+    /* Buttons and dropdowns: one size, one shape. */
+    .ch-btn,
+    .ch-select select {
+      box-sizing: border-box;
+      height: 1.9rem;
+      margin: 0;
+      border: 1px solid var(--global-divider-color);
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: normal;
+      text-transform: none;
+      color: var(--global-text-color);
+      background: transparent;
+      -webkit-appearance: none;
+      appearance: none;
+      cursor: pointer;
+      transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease;
+    }
+    .ch-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      min-width: 1.9rem;
+      padding: 0 1rem;
+      line-height: 1;
+      white-space: nowrap;
+      user-select: none;
+    }
+    /* The site colours every span with the text colour; inside a button, follow the button. */
+    .ch-btn span {
+      color: inherit;
+    }
+    .ch-select {
+      position: relative;
+      display: inline-flex;
+    }
+    .ch-select select {
+      padding: 0 2.1rem 0 1rem;
+      line-height: 1.775rem;
+    }
+    .ch-select option {
+      color: var(--global-text-color);
+      background: var(--global-bg-color);
+    }
+    /* iPhones zoom the page into a dropdown whose text is under 16px; there it gets 16px. */
+    @supports (-webkit-touch-callout: none) {
+      .ch-select select {
+        font-size: 16px;
+      }
+    }
+    /* The chevron of a dropdown. */
+    .ch-select::after,
+    .ch-menu > summary::after {
+      content: '';
+      width: 0.35rem;
+      height: 0.35rem;
+      border-right: 1.5px solid var(--global-text-color-light);
+      border-bottom: 1.5px solid var(--global-text-color-light);
+      pointer-events: none;
+    }
+    .ch-select::after {
+      position: absolute;
+      top: 50%;
+      right: 0.95rem;
+      transform: translateY(-70%) rotate(45deg);
+    }
+    .ch-menu > summary {
+      list-style: none;
+    }
+    .ch-menu > summary::-webkit-details-marker {
+      display: none;
+    }
+    .ch-menu > summary::after {
+      margin-left: 0.1rem;
+      transform: translateY(-25%) rotate(45deg);
+    }
+    .ch-menu[open] > summary::after {
+      transform: translateY(25%) rotate(225deg);
+    }
+    .ch-btn:not(:disabled):not([aria-selected='true']):hover,
+    .ch-select select:hover {
+      background-color: rgba(127, 127, 127, 0.12);
+      background-color: color-mix(in srgb, var(--global-text-color) 7%, var(--global-bg-color));
+    }
+    .ch-btn:focus-visible,
+    .ch-select select:focus-visible {
+      outline: 2px solid var(--global-theme-color);
+      outline-offset: 2px;
+    }
+    .ch-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+    /* The picked tab is filled. */
+    .ch-btn[aria-selected='true'] {
+      border-color: var(--global-theme-color);
+      color: var(--global-bg-color);
+      background-color: var(--global-theme-color);
+    }
+  </style>
+  {%- assign ch_controls_added = true -%}
+{%- endunless %}

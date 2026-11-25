@@ -7,11 +7,13 @@
 // the sample whose distance is nearest to it (a nearest-neighbour search over
 // the sorted distances), or, for coverage, that real image and the model's
 // sample nearest to it. Drag the marker or click the chart to move it; the
-// arrow keys move it too. The box is sized to fit the window.
+// arrow keys move it too. The box is sized to fit the window. With the include's
+// stack option (Figure 10), the images sit one above the other in a narrow
+// column, and the chart takes the rest of the width.
 (() => {
   const SVG_NS = "http://www.w3.org/2000/svg";
 
-  const CURVE_HEIGHT = 0.65; // the share of the plot's height the highest curve reaches, leaving room above
+  const CURVE_HEIGHT = 0.75; // the share of the plot's height the highest curve reaches, leaving room above
   const MARKER_W = 22; // the handle's width in px
   const MARKER_HIT = 12; // px either side of the marker that grab it
   const WIDE = 720; // box width (px) from which the panel sits beside the chart
@@ -44,16 +46,35 @@
     if (root.dataset.ready) return; // already set up (the script can be on a page twice)
     root.dataset.ready = "1";
     const { data, images } = JSON.parse(root.querySelector(".cfd-data").textContent);
-    const models = data.models.map((m) => ({ ...m, samples: [...m.samples].sort((a, b) => a.d - b.d) }));
+    // One set of models, or one per class (the same models in each, in the first class's order).
+    const sorted = (ms) => ms.map((m) => ({ ...m, samples: [...m.samples].sort((a, b) => a.d - b.d) }));
+    const sets = data.classes
+      ? data.classes.map((c) => {
+          const order = data.classes[0].models.map((m) => m.id);
+          return { ...c, models: sorted(order.map((id) => c.models.find((m) => m.id === id))) };
+        })
+      : [{ name: null, models: sorted(data.models) }];
+    let set_ = sets[0];
+    let models = set_.models;
     const xMax = data.x_max;
-    // The top of the y axis, so the highest curve reaches CURVE_HEIGHT of the plot.
-    const yTop = Math.max(...models.flatMap((m) => m.curve.map((p) => p[1]))) / CURVE_HEIGHT;
+    // The top of the y axis, so the highest curve reaches CURVE_HEIGHT of the plot. With classes,
+    // each class has its own axis, set again when the class changes.
+    const topOf = (s) => Math.max(...s.models.flatMap((m) => m.curve.map((p) => p[1]))) / CURVE_HEIGHT;
+    let yTop = topOf(set_);
 
     const svg = root.querySelector(".cfd-chart");
     const plot = root.querySelector(".cfd-plot");
+    const bar = root.querySelector(".cfd-bar");
     const keyBox = root.querySelector(".cfd-key");
     const panel = root.querySelector(".cfd-panel");
-    svg.setAttribute("aria-label", `${data.y_label} by ${data.x_label.toLowerCase()}, one curve per model`);
+    const note = panel.querySelector(".cfd-panel-note");
+    const stack = root.classList.contains("cfd-stack"); // the images in one column
+    const describe = () =>
+      svg.setAttribute(
+        "aria-label",
+        `${data.y_label} by ${data.x_label.toLowerCase()}, one curve per model${set_.name ? `, for ${set_.name.toLowerCase()}` : ""}`
+      );
+    describe();
 
     // The marker's distance; it starts at the closest sample of any model.
     let q = Math.min(xMax, ...models.flatMap((m) => m.samples.map((s) => s.d)));
@@ -143,6 +164,31 @@
       item.addEventListener("pointerleave", () => setFocus(null));
     });
     keyItem("currentColor", "4 3", "Mean", "cfd-key-mean");
+
+    // ---- Class dropdown, when the data has classes. A new class swaps the curves, means and
+    // samples; the marker stays at its distance, and each tile fades to its new image once loaded.
+    if (data.classes) {
+      const pick = root.querySelector(".cfd-pick");
+      const select = pick.querySelector("select");
+      sets.forEach((s, i) => select.add(new Option(s.name, i)));
+      pick.hidden = false;
+      select.addEventListener("change", () => {
+        set_ = sets[Number(select.value)];
+        models = set_.models;
+        yTop = topOf(set_);
+        curves.forEach((c, i) => {
+          c.m = models[i];
+          c.label.textContent = `mean ${fmt(c.m.mean)}`;
+        });
+        for (const b of blocks) {
+          b.m = models[b.mi];
+          b.index = new Map(b.m.samples.map((s, j) => [s[b.key], j]));
+        }
+        describe();
+        draw();
+        updatePanel();
+      });
+    }
 
     function setFocus(i) {
       svg.classList.toggle("cfd-focusing", i !== null);
@@ -253,38 +299,65 @@
     }
 
     // ---- Layout: the key and the chart on the left, as tall as the window allows; the panel on
-    // the right, from the top. On a narrow box they stack.
+    // the right, from the top. On a narrow box they stack. With the images in one column (stack),
+    // the column is narrow, the chart wide, and the plot as tall as the column of images.
     function layout() {
       const boxW = root.clientWidth;
       if (!boxW) return;
       const wide = boxW >= WIDE;
+      const beside = stack && wide;
       root.classList.toggle("cfd-wide", wide);
-      const W = Math.round(plot.clientWidth);
+      root.classList.toggle("cfd-beside", beside);
+      // A column one image wide is too narrow for the note: it goes under the key.
+      if (beside && note.parentNode !== bar) bar.appendChild(note);
+      if (!beside && note.parentNode !== panel) panel.prepend(note);
+      panel.style.paddingTop = "";
+      const mt = 10;
+      const bottom = 22 + 20 + 8; // tick labels (clear of the marker's handle), axis title
+      const nav = document.getElementById("navbar");
+      const top = nav ? Math.max(0, nav.getBoundingClientRect().bottom) : 0;
+      const style = getComputedStyle(root);
+      const chrome =
+        parseFloat(style.paddingTop) + parseFloat(style.paddingBottom) + parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
+      const above = () => bar.offsetHeight + parseFloat(getComputedStyle(bar).marginBottom);
+      let W;
       let H;
-      if (wide) {
-        const nav = document.getElementById("navbar");
-        const top = nav ? Math.max(0, nav.getBoundingClientRect().bottom) : 0;
-        const style = getComputedStyle(root);
-        const chrome =
-          parseFloat(style.paddingTop) + parseFloat(style.paddingBottom) + parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
-        const above = keyBox.offsetHeight + parseFloat(getComputedStyle(keyBox).marginBottom);
-        const room = window.innerHeight - top - chrome - above - 16;
-        // The left column (key and chart) should be at least as tall as the panel: a note and a square grid, two tiles across.
-        const ps = getComputedStyle(panel);
-        const rows = Math.ceil(blocks.length / 2);
-        const side = (panel.clientWidth - (parseFloat(ps.columnGap) || 0)) / 2 - 10; // less the frame
-        const headH = Math.max(...[...panel.querySelectorAll(".cfd-head")].map((h) => h.offsetHeight)) + 4;
-        const noteH = panel.querySelector(".cfd-panel-note")?.offsetHeight || 0;
-        const need = noteH + rows * (side + 10 + headH) + (parseFloat(ps.rowGap) || 0) * rows;
-        H = Math.round(clamp(Math.max(Math.min(room, W * 0.85), need - above), 300, 720));
+      if (beside) {
+        // An image is about a seventh of the box wide, smaller if the window is too short for the
+        // column; the plot runs from the first image's name to the foot of the last image.
+        // Worked out rather than measured, as the images may not have loaded yet.
+        const n = blocks.length;
+        const head = panel.querySelector(".cfd-head");
+        const headH = head.offsetHeight + parseFloat(getComputedStyle(head).marginBottom);
+        const gap = parseFloat(getComputedStyle(panel).rowGap) || 0;
+        const column = (t) => n * (headH + t + 10) + (n - 1) * gap; // each image has a 10px frame
+        const setTile = (t) => root.style.setProperty("--cfd-tile", `${t + 10}px`);
+        let tile = Math.round(clamp(boxW * 0.14, 100, 160));
+        const spare = window.innerHeight - top - chrome - above() - 16 - mt - bottom - column(tile);
+        if (spare < 0) tile = Math.max(80, tile + Math.floor(spare / n));
+        setTile(tile);
+        panel.style.paddingTop = `${above() + mt}px`; // the column starts level with the plot's top
+        W = Math.round(plot.clientWidth);
+        H = mt + Math.round(column(tile)) + bottom;
       } else {
-        H = Math.round(clamp(W * 0.72, 240, 420));
+        W = Math.round(plot.clientWidth);
+        if (wide) {
+          const room = window.innerHeight - top - chrome - above() - 16;
+          // The left column (key and chart) should be at least as tall as the panel: a note and a square grid, two tiles across.
+          const ps = getComputedStyle(panel);
+          const rows = Math.ceil(blocks.length / 2);
+          const side = (panel.clientWidth - (parseFloat(ps.columnGap) || 0)) / 2 - 10; // less the frame
+          const headH = Math.max(...[...panel.querySelectorAll(".cfd-head")].map((h) => h.offsetHeight)) + 4;
+          const noteH = note.offsetHeight;
+          const need = noteH + rows * (side + 10 + headH) + (parseFloat(ps.rowGap) || 0) * rows;
+          H = Math.round(clamp(Math.max(Math.min(room, W * 0.85), need - above()), 300, 720));
+        } else {
+          H = Math.round(clamp(W * 0.72, 240, 420));
+        }
       }
       const narrow = W < 420;
       const ml = narrow ? 34 : 44;
       const mr = 10;
-      const mt = 10;
-      const bottom = 22 + 20 + 8; // tick labels (clear of the marker's handle), axis title
       L = { W, H, ml, mr, mt, PW: W - ml - mr, PH: H - mt - bottom, narrow };
       L.axisY = mt + L.PH;
       set(svg, { viewBox: `0 0 ${W} ${H}`, width: W, height: H });
@@ -302,14 +375,16 @@
       if (!L) return;
       const { W, ml, mr, mt, PW, PH, axisY, narrow } = L;
 
-      // Grid and y axis.
+      // Grid and y-axis labels; the y axis's line and ticks are drawn over the curves, with the x axis.
       gGrid.replaceChildren();
       const yStep = niceStep(yTop, Math.max(3, Math.round(PH / 55)));
       const yDec = decimals(yStep);
+      const yTicks = [];
       for (let t = 0; t <= yTop + 1e-9; t += yStep) {
         const y = sy(t);
+        yTicks.push(y);
         if (t > 1e-9) el("line", { class: "cfd-grid", x1: ml, x2: ml + PW, y1: y, y2: y }, gGrid);
-        el("text", { x: ml - 7, y: y + 4, "text-anchor": "end", "font-size": 11 }, gGrid).textContent = t.toFixed(yDec);
+        el("text", { x: ml - 8, y: y + 4, "text-anchor": "end", "font-size": 11 }, gGrid).textContent = t.toFixed(yDec);
       }
       el(
         "text",
@@ -334,8 +409,10 @@
         set(c.label, { x: mx + 4, y: mt + 11, "font-size": 11 });
       }
 
-      // x axis, ticks and titles.
+      // The axes: the y axis with its ticks, then the x axis, its ticks and titles.
       gAxis.replaceChildren();
+      el("line", { class: "cfd-axis", x1: ml, x2: ml, y1: mt, y2: axisY }, gAxis);
+      for (const y of yTicks) el("line", { class: "cfd-axis", x1: ml - 4, x2: ml, y1: y, y2: y }, gAxis);
       el("line", { class: "cfd-axis", x1: ml, x2: ml + PW, y1: axisY, y2: axisY }, gAxis);
       const xStep = niceStep(xMax, Math.max(3, Math.round(PW / 70)));
       const xDec = decimals(xStep);

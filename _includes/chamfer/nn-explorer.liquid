@@ -16,7 +16,9 @@
   The images and distances are in _data/chamfer_nn_examples.json, written by
   bin/chamfer_nn_examples.py. The words are in _data/chamfer_nn_text.yml.
   The styles and script are added once per page, however many explorers it has.
+  The frame, the dropdown and the labels come from chamfer/controls.liquid.
 {%- endcomment -%}
+{% include chamfer/controls.liquid %}
 {%- assign nnx_dir = include.direction | default: 'fidelity' -%}
 {%- assign nnx_text = site.data.chamfer_nn_text[nnx_dir] -%}
 {%- unless nnx_assets_added %}
@@ -27,10 +29,6 @@
       --nnx-good: #2e9d5b;
       --nnx-mid: #c98a12;
       --nnx-bad: #d64545;
-      margin: 2rem 0;
-      padding: 1.1rem 1.25rem 1rem;
-      border: 1px solid var(--global-divider-color);
-      border-radius: 14px;
     }
     /* The query's set and the neighbours' set, by direction. */
     .nnx[data-direction='fidelity'] {
@@ -40,10 +38,6 @@
     .nnx[data-direction='coverage'] {
       --nnx-q: var(--nnx-real);
       --nnx-n: var(--nnx-gen);
-    }
-    body d-article .nnx-caption {
-      margin-top: -1.25rem;
-      color: var(--global-text-color-light);
     }
     body d-article .nnx-test {
       margin: 0 0 0.9rem;
@@ -68,70 +62,24 @@
       align-items: center;
       justify-content: space-between;
       gap: 0.6rem 1.5rem;
-      margin-bottom: 1rem;
+      margin-bottom: 0.75rem;
     }
     .nnx-group {
       display: flex;
       align-items: center;
       flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-    .nnx-group-label {
-      margin: 0;
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--global-text-color-light);
-    }
-    /* The class: a dropdown, drawn as a pill with a chevron. */
-    .nnx-select {
-      position: relative;
-      display: inline-block;
-    }
-    .nnx-select::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      right: 0.85rem;
-      width: 0.4rem;
-      height: 0.4rem;
-      margin-top: -0.3rem;
-      border-right: 2px solid var(--global-theme-color);
-      border-bottom: 2px solid var(--global-theme-color);
-      transform: rotate(45deg);
-      pointer-events: none;
-    }
-    .nnx-select select {
-      -webkit-appearance: none;
-      appearance: none;
-      margin: 0;
-      border: 1px solid var(--global-theme-color);
-      border-radius: 999px;
-      padding: 0.25rem 2.1rem 0.25rem 0.9rem;
-      font: inherit;
-      color: var(--global-theme-color);
-      background: transparent;
-      cursor: pointer;
-    }
-    .nnx-select select:hover {
-      background: rgba(85, 63, 195, 0.1);
-      background: color-mix(in srgb, var(--global-theme-color) 12%, transparent);
-    }
-    .nnx-select option {
-      color: var(--global-text-color);
-      background: var(--global-bg-color);
+      gap: 0.45rem;
     }
     /* The query image: the class's three, as small pictures; the picked one is framed. */
     .nnx-picks {
       display: inline-flex;
-      gap: 0.4rem;
+      gap: 0.3rem;
     }
     .nnx-pick {
       margin: 0;
       padding: 2px;
       border: 2px solid transparent;
-      border-radius: 8px;
+      border-radius: 7px;
       line-height: 0;
       background: transparent;
       opacity: 0.55;
@@ -147,12 +95,16 @@
       border-color: var(--nnx-q);
       opacity: 1;
     }
+    .nnx-pick:focus-visible {
+      outline: 2px solid var(--global-theme-color);
+      outline-offset: 1px;
+    }
     .nnx-pick img {
       display: block;
-      width: 2.6rem;
-      height: 2.6rem;
+      width: 2rem;
+      height: 2rem;
       object-fit: cover;
-      border-radius: 5px;
+      border-radius: 4px;
     }
     /* The query and its three nearest neighbours, in one row. */
     .nnx-stage {
@@ -339,9 +291,6 @@
       color: var(--nnx-level);
     }
     @media (max-width: 560px) {
-      .nnx {
-        padding: 0.9rem 0.8rem 0.8rem;
-      }
       .nnx-stage {
         grid-template-columns: minmax(0, 1fr) 1rem repeat(3, minmax(0, 1fr));
         column-gap: 0.35rem;
@@ -359,7 +308,7 @@
     }
   </style>
 {%- endunless %}
-<div class="nnx l-page" data-nn-explorer data-direction="{{ nnx_dir }}" data-level="0">
+<div class="nnx ch-box l-page" data-nn-explorer data-direction="{{ nnx_dir }}" data-level="0">
   <p class="nnx-test">
     {%- if nnx_text.intro -%}
       <strong class="nnx-intro">{{ nnx_text.intro }}</strong>
@@ -368,11 +317,11 @@
   </p>
   <div class="nnx-controls">
     <div class="nnx-group">
-      <label class="nnx-group-label" for="nnx-{{ nnx_dir }}-class">Class</label>
-      <span class="nnx-select"><select class="nnx-classes" id="nnx-{{ nnx_dir }}-class"></select></span>
+      <label class="ch-label" for="nnx-{{ nnx_dir }}-class">Class</label>
+      <span class="ch-select"><select class="nnx-classes" id="nnx-{{ nnx_dir }}-class"></select></span>
     </div>
     <div class="nnx-group">
-      <span class="nnx-group-label" id="nnx-{{ nnx_dir }}-pick">{{ nnx_text.pick }}</span>
+      <span class="ch-label" id="nnx-{{ nnx_dir }}-pick">{{ nnx_text.pick }}</span>
       <div class="nnx-picks" role="radiogroup" aria-labelledby="nnx-{{ nnx_dir }}-pick"></div>
     </div>
   </div>
@@ -411,7 +360,7 @@
   </script>
 </div>
 {%- if include.caption %}
-  <div class="caption nnx-caption">{{ include.caption }}</div>
+  <div class="caption ch-caption">{{ include.caption }}</div>
 {%- endif %}
 {%- unless nnx_assets_added %}
   <script defer src="{{ '/assets/js/chamfer-nn-explorer.js' | relative_url }}"></script>

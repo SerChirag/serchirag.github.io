@@ -1,0 +1,41 @@
+# Settings for the ranking chart on the Chamfer page
+# (_includes/chamfer/ranking-chart.liquid). The numbers themselves come from
+# _data/chamfer_models.json, which bin/chamfer_table_to_json.py writes from the
+# paper's table; ids below are the ones that script prints.
+
+# One entry per family heading in the table, in the order the filters list them.
+#   id     the heading as the script turns it into an id
+#   short  the name on the family's filter button
+#   mark   how its models are drawn: orange, blue or green (filled circles),
+#          square (grey squares) or ring (hollow circles)
+families:
+  - id: diffusion-and-flow-matching
+    short: Diffusion
+    mark: orange
+  - id: few-step
+    short: Few-step
+    mark: blue
+  - id: autoregressive-and-masked
+    short: Autoregressive
+    mark: green
+  - id: gans
+    short: GANs
+    mark: square
+  - id: fd-inception-and-fd-sim-variants
+    short: FD variants
+    mark: ring
+
+# The models shown when the page opens, and under "Paper's Figure 9".
+figure:
+  - dit-xl-2-250-steps
+  - sit-xl-2
+  - sit-xl-2-repa
+  - jit-h-16
+  - imm-2-steps
+  - imm-4-steps
+  - imm-8-steps
+  - imeanflow
+  - drifting-b
+  - drifting-l
+  - priming-l
+  - var-d30
