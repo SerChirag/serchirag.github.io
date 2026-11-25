@@ -4,6 +4,8 @@ title: "The Fault in Our Metrics: Revisiting Generative Model Evaluation with Ch
 description: "NeurIPS 2026, Evaluations & Datasets Track"
 date: 2026-10-29
 permalink: /chamfer/
+# Citations: <d-cite key="..."></d-cite>, with keys from assets/bibliography/chamfer.bib (the paper's references.bib).
+bibliography: chamfer.bib
 
 hero_include: hero/chamfer-pentagons.liquid
 hero_tldr:
@@ -119,9 +121,9 @@ written. Move a section out of this block to publish it.
 
 ## Chamfer
 
-{% include chamfer/nn-explorer.liquid direction="fidelity" caption="Generated images are samples from IMM-XL with 8 steps (Zhou et al., 2025), and real images are from ImageNet-1K. We use Inception-v3 features to find the nearest neighbours." %}
+{% include chamfer/nn-explorer.liquid direction="fidelity" caption="Generated images are samples from IMM-XL with 8 steps <d-cite key='zhou2025inductive'></d-cite>, and real images are from ImageNet-1K. We use Inception-v3 features to find the nearest neighbours." %}
 
-{% include chamfer/nn-explorer.liquid direction="coverage" caption="Generated images are samples from IMM-XL with 8 steps (Zhou et al., 2025), and real images are from ImageNet-1K. We use Inception-v3 features to find the nearest neighbours." %}
+{% include chamfer/nn-explorer.liquid direction="coverage" caption="Generated images are samples from IMM-XL with 8 steps <d-cite key='zhou2025inductive'></d-cite>, and real images are from ImageNet-1K. We use Inception-v3 features to find the nearest neighbours." %}
 
 {% comment %}
 Still to write in the Chamfer section: the formulation (just give the formula).
