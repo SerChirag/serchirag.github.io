@@ -6,20 +6,20 @@
   closest to and farthest from the real images, which are only downloaded then.
   On narrow screens the filters go above the chart and the panel below it.
 
-  The numbers come from _data/chamfer_models.json, written from the paper's
-  table by bin/chamfer_table_to_json.py; families, colours and the models
-  shown first are set in _data/chamfer_chart.yml. Samples are whatever images
-  sit in assets/chamfer-samples/<model id>/ (closest-01.webp, ...,
-  farthest-01.webp, ...), copied there by bin/chamfer_samples.py. Drawn by
-  assets/js/chamfer-ranking-chart.js.
+  The numbers come from _data/chamfer/models.json, written from the paper's
+  table by bin/chamfer/table_to_json.py; families, colours and the models
+  shown first are set in _data/chamfer/chart.yml. Samples are whatever images
+  sit in assets/img/chamfer/samples/<model id>/ (closest-01.webp, ...,
+  farthest-01.webp, ...), copied there by bin/chamfer/samples.py. Drawn by
+  assets/js/chamfer/ranking-chart.js.
   Pass caption="..." to put a caption under it. The frame, the filter chips,
   the Models menu and the zoom buttons come from chamfer/controls.liquid.
 {%- endcomment -%}
-{%- assign rk_samples = site.static_files | where_exp: 'f', "f.path contains '/assets/chamfer-samples/'" | map: 'path' -%}
+{%- assign rk_samples = site.static_files | where_exp: 'f', "f.path contains '/assets/img/chamfer/samples/'" | map: 'path' -%}
 {% include chamfer/controls.liquid %}
 <style>
   /* Each model's colour (--rk-c) is set on its marks by the script, from
-     _data/chamfer_chart.yml. Labels take a darker shade of it, as in the
+     _data/chamfer/chart.yml. Labels take a darker shade of it, as in the
      paper, or a lighter one on a dark page. */
   .rk {
     --rk-tint: rgba(0, 0, 0, 0.04);
@@ -472,10 +472,10 @@
   </div>
   <script type="application/json" class="rk-data">
     {
-      "families": {{ site.data.chamfer_chart.families | jsonify }},
-      "figure": {{ site.data.chamfer_chart.figure | jsonify }},
-      "colors": {{ site.data.chamfer_chart.colors | jsonify }},
-      "models": {{ site.data.chamfer_models.models | jsonify }},
+      "families": {{ site.data.chamfer.chart.families | jsonify }},
+      "figure": {{ site.data.chamfer.chart.figure | jsonify }},
+      "colors": {{ site.data.chamfer.chart.colors | jsonify }},
+      "models": {{ site.data.chamfer.models.models | jsonify }},
       "samples": {{ rk_samples | jsonify }},
       "base": {{ site.baseurl | jsonify }}
     }
@@ -484,4 +484,4 @@
 {%- if include.caption %}
   <div class="caption ch-caption">{{ include.caption }}</div>
 {%- endif %}
-<script defer src="{{ '/assets/js/chamfer-ranking-chart.js' | relative_url }}"></script>
+<script defer src="{{ '/assets/js/chamfer/ranking-chart.js' | relative_url }}"></script>

@@ -6,7 +6,7 @@ _includes/chamfer/fidelity-density.liquid. This script reads the export
 described in ~/Desktop/Chamfer/Blog/FIGURE_DATA_SPEC.md and writes what the
 plots draw. Re-run it whenever the export changes; never edit the outputs by hand.
 
-    python3 bin/chamfer_figure_data.py ~/Downloads/chamfer-figure-data
+    python3 bin/chamfer/figure_data.py ~/Downloads/chamfer-figure-data
 
 Reads:
   fig11/fig11.csv   model,file,distance
@@ -22,13 +22,13 @@ Reads:
   fig10/<class>/<model>/  the generated images
 
 Writes:
-  assets/chamfer-fidelity/<model>/<name>.webp   Figure 11's images
-  assets/chamfer-coverage/<model>/<name>.webp   Figure 12's generated images
-  assets/chamfer-coverage/real/<name>.webp      Figure 12's real images
-  assets/chamfer-class/<class>/<model>/<name>.webp  Figure 10's images
-  _data/chamfer_fidelity_density.json           Figure 11's curves and samples
-  _data/chamfer_coverage_density.json           Figure 12's curves and samples
-  _data/chamfer_class_density.json              Figure 10's curves and samples, per class
+  assets/img/chamfer/fidelity/<model>/<name>.webp   Figure 11's images
+  assets/img/chamfer/coverage/<model>/<name>.webp   Figure 12's generated images
+  assets/img/chamfer/coverage/real/<name>.webp      Figure 12's real images
+  assets/img/chamfer/class/<class>/<model>/<name>.webp  Figure 10's images
+  _data/chamfer/fidelity_density.json           Figure 11's curves and samples
+  _data/chamfer/coverage_density.json           Figure 12's curves and samples
+  _data/chamfer/class_density.json              Figure 10's curves and samples, per class
 
 The two image folders are emptied first. Images become WebP (quality 82), no
 larger than 256 px. Everything the charts draw comes from the export: the
@@ -57,7 +57,7 @@ from pathlib import Path
 
 from PIL import Image
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]
 SIZE = 256  # the longest side of a stored image, in px
 QUALITY = 82  # WebP quality
 CURVE_STEP = 2  # keep every n-th point of a curve; 1000 points become 500
@@ -126,7 +126,7 @@ def load(json_path, curve_path, samples_by_model, note):
     print(f"  distance axis 0 to {data['x_max']}")
     data["source"] = (
         f"{data['source'].split(';')[0].split(' (')[0]}; curves and samples from the paper's export "
-        "(sample_interpret/export_figure_data.py), loaded by bin/chamfer_figure_data.py"
+        "(sample_interpret/export_figure_data.py), loaded by bin/chamfer/figure_data.py"
     )
     data["samples_note"] = note
     json_path.write_text(json.dumps(data, indent=2) + "\n")
@@ -173,7 +173,7 @@ def load_classes(json_path, src10, out10, means):
     data["x_max"] = math.ceil(x_end * 10 - 1e-9) / 10
     data["source"] = (
         "Figure 10 of the paper; curves and samples from the paper's export "
-        "(sample_interpret/export_figure_data.py), loaded by bin/chamfer_figure_data.py"
+        "(sample_interpret/export_figure_data.py), loaded by bin/chamfer/figure_data.py"
     )
     data["samples_note"] = (
         "One generated sample drawn at random (seed 0) from each of 25 equal bins of distance in [0, 1.3), "
@@ -190,7 +190,7 @@ def main():
     src = args.export.expanduser().resolve()
 
     # Figure 11: one generated image per sample.
-    out11 = ROOT / "assets" / "chamfer-fidelity"
+    out11 = ROOT / "assets" / "img" / "chamfer" / "fidelity"
     shutil.rmtree(out11, ignore_errors=True)
     samples11 = defaultdict(list)
     for row in read_csv(src / "fig11" / "fig11.csv"):
@@ -199,7 +199,7 @@ def main():
         samples11[model].append({"file": f"{model}/{name}", "d": round(float(row["distance"]), 5)})
     print("Figure 11:")
     load(
-        ROOT / "_data" / "chamfer_fidelity_density.json",
+        ROOT / "_data" / "chamfer" / "fidelity_density.json",
         src / "fig11" / "curves.csv",
         samples11,
         "One generated sample drawn at random (seed 0) from each 0.01-wide bin of distance in [0, 0.8); "
@@ -207,7 +207,7 @@ def main():
     )
 
     # Figure 12: a real image and the model's generated sample nearest to it.
-    out12 = ROOT / "assets" / "chamfer-coverage"
+    out12 = ROOT / "assets" / "img" / "chamfer" / "coverage"
     shutil.rmtree(out12, ignore_errors=True)
     samples12 = defaultdict(list)
     done_real = {}
@@ -222,7 +222,7 @@ def main():
         )
     print("Figure 12:")
     load(
-        ROOT / "_data" / "chamfer_coverage_density.json",
+        ROOT / "_data" / "chamfer" / "coverage_density.json",
         src / "fig12" / "curves.csv",
         samples12,
         "One real image drawn at random (seed 0) from each 0.01-wide bin of distance in [0, 0.8), "
@@ -231,10 +231,10 @@ def main():
 
     # Figure 10: per class, one generated image per sample. Optional: older exports lack it,
     # and the page then keeps the stand-in read from the paper's PDFs.
-    out10 = ROOT / "assets" / "chamfer-class"
+    out10 = ROOT / "assets" / "img" / "chamfer" / "class"
     if (src / "fig10" / "fig10.csv").exists():
         print("Figure 10:")
-        load_classes(ROOT / "_data" / "chamfer_class_density.json", src / "fig10", out10, readme_means(src / "README.md"))
+        load_classes(ROOT / "_data" / "chamfer" / "class_density.json", src / "fig10", out10, readme_means(src / "README.md"))
     else:
         print("Figure 10: not in this export; left as it is")
 

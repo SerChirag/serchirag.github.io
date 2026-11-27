@@ -1,5 +1,5 @@
 {
-  "source": "Figure 10 of the paper; curves and samples from the paper's export (sample_interpret/export_figure_data.py), loaded by bin/chamfer_figure_data.py",
+  "source": "Figure 10 of the paper; curves and samples from the paper's export (sample_interpret/export_figure_data.py), loaded by bin/chamfer/figure_data.py",
   "x_label": "Distance to nearest real image",
   "y_label": "% of samples",
   "x_max": 1.3,

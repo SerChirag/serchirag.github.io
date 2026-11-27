@@ -1,6 +1,6 @@
 # The words of the two nearest-neighbour explorers on the Chamfer page
 # (_includes/chamfer/nn-explorer.liquid). Edit freely; the images and distances
-# are in chamfer_nn_examples.json.
+# are in nn_examples.json.
 #
 #   intro       the bold words that open the line at the top
 #   test        the rest of that line. <b class="nnx-gen"> and <b class="nnx-real">

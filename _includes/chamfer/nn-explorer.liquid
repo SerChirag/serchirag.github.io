@@ -5,7 +5,7 @@
   reader picks a class and one of its three query images, whose nearest
   neighbours run from close to far; the images, their distances, a distance
   line and a comment change to match.
-  Drawn by assets/js/chamfer-nn-explorer.js.
+  Drawn by assets/js/chamfer/nn-explorer.js.
 
   Parameters:
     direction  fidelity (a generated query, real neighbours; Figure 6) or
@@ -13,14 +13,14 @@
                Default fidelity.
     caption    optional; a caption under the box
 
-  The images and distances are in _data/chamfer_nn_examples.json, written by
-  bin/chamfer_nn_examples.py. The words are in _data/chamfer_nn_text.yml.
+  The images and distances are in _data/chamfer/nn_examples.json, written by
+  bin/chamfer/nn_examples.py. The words are in _data/chamfer/nn_text.yml.
   The styles and script are added once per page, however many explorers it has.
   The frame, the dropdown and the labels come from chamfer/controls.liquid.
 {%- endcomment -%}
 {% include chamfer/controls.liquid %}
 {%- assign nnx_dir = include.direction | default: 'fidelity' -%}
-{%- assign nnx_text = site.data.chamfer_nn_text[nnx_dir] -%}
+{%- assign nnx_text = site.data.chamfer.nn_text[nnx_dir] -%}
 {%- unless nnx_assets_added %}
   <style>
     .nnx {
@@ -356,13 +356,13 @@
   </div>
   <div class="nnx-says" aria-live="polite"><span class="nnx-says-text"></span></div>
   <script type="application/json" class="nnx-data">
-    {"data": {{ site.data.chamfer_nn_examples[nnx_dir] | jsonify }}, "x_max": {{ site.data.chamfer_nn_examples.x_max | jsonify }}, "text": {{ nnx_text | jsonify }}, "images": {{ '/assets/chamfer-nn/' | relative_url | jsonify }}}
+    {"data": {{ site.data.chamfer.nn_examples[nnx_dir] | jsonify }}, "x_max": {{ site.data.chamfer.nn_examples.x_max | jsonify }}, "text": {{ nnx_text | jsonify }}, "images": {{ '/assets/img/chamfer/nn/' | relative_url | jsonify }}}
   </script>
 </div>
 {%- if include.caption %}
   <div class="caption ch-caption">{{ include.caption }}</div>
 {%- endif %}
 {%- unless nnx_assets_added %}
-  <script defer src="{{ '/assets/js/chamfer-nn-explorer.js' | relative_url }}"></script>
+  <script defer src="{{ '/assets/js/chamfer/nn-explorer.js' | relative_url }}"></script>
   {%- assign nnx_assets_added = true -%}
 {%- endunless %}

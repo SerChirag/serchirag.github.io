@@ -2,7 +2,7 @@
   Two-pentagon simulator: the paper's counterexample with one view per metric
   (FD, and the pairs Precision & Recall, Density & Coverage, Chamfer). Each view lists the
   metric's numbered steps, highlights the one being carried out, narrates it in
-  a commentary line, and ends on the value. Drawn by assets/js/chamfer-pentagon-sim.js, which also builds the
+  a commentary line, and ends on the value. Drawn by assets/js/chamfer/pentagon-sim.js, which also builds the
   tabs. Use it anywhere in a page with an include tag for
   chamfer/pentagon-sim.liquid; pass caption="..." to put a caption under it.
   The frame, tabs and Replay button come from chamfer/controls.liquid.
@@ -437,4 +437,4 @@
 {%- if include.caption %}
   <div class="caption ch-caption">{{ include.caption }}</div>
 {%- endif %}
-<script defer src="{{ '/assets/js/chamfer-pentagon-sim.js' | relative_url }}"></script>
+<script defer src="{{ '/assets/js/chamfer/pentagon-sim.js' | relative_url }}"></script>

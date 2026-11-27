@@ -3,9 +3,9 @@
 // axis on its own scale (lower is better on both), bubble area for the parameter
 // count, colour for the model's line as in the paper. The chart stands tall, as
 // in the paper, with the filters and the panel beside it.
-// The numbers come from _data/chamfer_models.json (written from the paper's
-// table by bin/chamfer_table_to_json.py), the families, colours and first view
-// from _data/chamfer_chart.yml. Nothing here assumes a range of values: the axes fit
+// The numbers come from _data/chamfer/models.json (written from the paper's
+// table by bin/chamfer/table_to_json.py), the families, colours and first view
+// from _data/chamfer/chart.yml. Nothing here assumes a range of values: the axes fit
 // whatever the table holds.
 //
 // The filters pick the models and the view fits them. Inside the chart,
@@ -29,7 +29,7 @@
   // `max`. Under the chart, one row of `under` (`small` on a phone). `gap` and
   // `scrollbar` match the CSS.
   const TILE = { two: 100, max: 180, under: 104, small: 88, gap: 4, scrollbar: 10 };
-  const SAMPLE = /\/assets\/chamfer-samples\/([^/]+)\/(closest|farthest)-(\d+)\.(webp|avif|jpe?g|png)$/i;
+  const SAMPLE = /\/assets\/img\/chamfer\/samples\/([^/]+)\/(closest|farthest)-(\d+)\.(webp|avif|jpe?g|png)$/i;
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const coarse = window.matchMedia("(pointer: coarse)");
 
@@ -66,7 +66,7 @@
     if (!models.length) return;
     const byId = new Map(models.map((m) => [m.id, m]));
 
-    // Families: those set in chamfer_chart.yml, in that order, then any other
+    // Families: those set in _data/chamfer/chart.yml, in that order, then any other
     // heading the table has.
     const configured = new Map((data.families || []).map((f) => [f.id, f]));
     const familyIds = [...new Set([...configured.keys(), ...models.map((m) => m.family)])].filter((id) => models.some((m) => m.family === id));
@@ -75,11 +75,11 @@
       return { id, name, short: (configured.get(id) || {}).short || name };
     });
     // Colours, as in the paper: a model takes the colour of the first entry in
-    // chamfer_chart.yml whose text its name contains, or grey if none does.
+    // _data/chamfer/chart.yml whose text its name contains, or grey if none does.
     const colorOf = new Map(models.map((m) => [m.id, ((data.colors || []).find((c) => m.name.includes(c.match)) || {}).color || "#9e9e9e"]));
     const paint = (node, color) => node.style.setProperty("--rk-c", color);
 
-    // Samples, from the files under assets/chamfer-samples/<id>/.
+    // Samples, from the files under assets/img/chamfer/samples/<id>/.
     const samples = new Map();
     (data.samples || []).forEach((path) => {
       const match = SAMPLE.exec(path);

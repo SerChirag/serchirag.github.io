@@ -1,8 +1,8 @@
 {%- comment -%}
   Hero for the Chamfer page: the paper's two-pentagon counterexample, animated
   on a canvas under a sheet of frosted glass. The animation is one of the drafts
-  in assets/js/chamfer-hero-draft*.js, picked by the script at the bottom. Opt in from a distill page with
-  `hero_include: hero/chamfer-pentagons.liquid`; buttons come from `hero_links`,
+  in assets/js/chamfer/hero-draft*.js, picked by the script at the bottom. Opt in from a distill page with
+  `hero_include: chamfer/hero.liquid`; buttons come from `hero_links`,
   and an optional TL;DR from `hero_tldr` (a list, one line per item).
   A title with a colon is split into a headline and a subtitle.
 {%- endcomment -%}
@@ -186,9 +186,9 @@
   // delete the rest.
   (function () {
     var drafts = {
-      draft2: "{{ '/assets/js/chamfer-hero-draft2.js' | relative_url }}",
-      draft3: "{{ '/assets/js/chamfer-hero-draft3.js' | relative_url }}",
-      draft4: "{{ '/assets/js/chamfer-hero-draft4.js' | relative_url }}",
+      draft2: "{{ '/assets/js/chamfer/hero-draft2.js' | relative_url }}",
+      draft3: "{{ '/assets/js/chamfer/hero-draft3.js' | relative_url }}",
+      draft4: "{{ '/assets/js/chamfer/hero-draft4.js' | relative_url }}",
     };
     var script = document.createElement('script');
     script.src = drafts[new URLSearchParams(window.location.search).get('hero')] || drafts.draft4;

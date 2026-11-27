@@ -6,7 +6,7 @@ query image, its three nearest neighbours in the other set. This script reads
 the images the paper's figures were made from and writes what the explorers
 show. Re-run it whenever those figures change; never edit the outputs by hand.
 
-    python3 bin/chamfer_nn_examples.py ~/Desktop/Chamfer/Chamfer-Overleaf/figures
+    python3 bin/chamfer/nn_examples.py ~/Desktop/Chamfer/Chamfer-Overleaf/figures
 
 Reads, for each direction, class and level (1 closest, 3 farthest):
   precision_figure/<class>/<level>/   Figure 6: a generated query, its nearest real images
@@ -14,11 +14,11 @@ Reads, for each direction, class and level (1 closest, 3 farthest):
 each holding query.png, nn1.png, nn2.png, nn3.png and distances.log.
 
 Writes:
-  assets/chamfer-nn/<direction>/<class>/<level>-<name>.webp
-  _data/chamfer_nn_examples.json
+  assets/img/chamfer/nn/<direction>/<class>/<level>-<name>.webp
+  _data/chamfer/nn_examples.json
 
 The image folder is emptied first. Images become WebP (quality 82). The words
-the explorers show live in _data/chamfer_nn_text.yml, which this script does
+the explorers show live in _data/chamfer/nn_text.yml, which this script does
 not touch.
 
 Needs Pillow (pip install Pillow).
@@ -32,7 +32,7 @@ from pathlib import Path
 
 from PIL import Image
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]
 QUALITY = 82
 DIRECTIONS = {"fidelity": "precision_figure", "coverage": "recall_figure"}
 # The classes in the paper's column order, with the names the explorers show.
@@ -67,7 +67,7 @@ def main():
     args = parser.parse_args()
     src = args.figures.expanduser().resolve()
 
-    out = ROOT / "assets" / "chamfer-nn"
+    out = ROOT / "assets" / "img" / "chamfer" / "nn"
     shutil.rmtree(out, ignore_errors=True)
     data = {}
     top = 0.0
@@ -94,9 +94,9 @@ def main():
     data["source"] = (
         "Figures 6 and 7 of the paper (Chamfer-Overleaf/figures/{precision,recall}_figure): "
         "IMM-XL (8 steps) against ImageNet-1K, distances in Inception-v3 feature space; "
-        "loaded by bin/chamfer_nn_examples.py"
+        "loaded by bin/chamfer/nn_examples.py"
     )
-    path = ROOT / "_data" / "chamfer_nn_examples.json"
+    path = ROOT / "_data" / "chamfer" / "nn_examples.json"
     path.write_text(json.dumps(data, indent=2) + "\n")
     files = list(out.rglob("*.webp"))
     print(f"distance axis 0 to {data['x_max']}")

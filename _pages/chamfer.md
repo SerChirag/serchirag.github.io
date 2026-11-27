@@ -7,16 +7,16 @@ permalink: /chamfer/
 # Citations: <d-cite key="..."></d-cite>, with keys from assets/bibliography/chamfer.bib (the paper's references.bib).
 bibliography: chamfer.bib
 
-hero_include: hero/chamfer-pentagons.liquid
+hero_include: chamfer/hero.liquid
 hero_tldr:
   - Existing evaluation metrics for image generation are either uninformative or unreliable.
   - We introduce a simple, principled replacement that is intuitive, fast and interpretable.
 hero_links:
   - label: Paper
-    url: /assets/pdf/chamfer-paper.pdf
+    url: /assets/pdf/chamfer/paper.pdf
     icon: "fas fa-file-pdf"
   - label: Poster
-    url: /assets/pdf/chamfer-poster.pdf
+    url: /assets/pdf/chamfer/poster.pdf
     icon: "fas fa-image"
 
 # Contents in a sticky sidebar left of the text, built from the ## and ### headings.
@@ -135,11 +135,11 @@ Still to write in the Chamfer section: the formulation (just give the formula).
 
 ## Interpretability of Chamfer
 
-{% include chamfer/fidelity-density.liquid data="chamfer_class_density" images="/assets/chamfer-class/" stack=true %}
+{% include chamfer/fidelity-density.liquid data="class_density" images="/assets/img/chamfer/class/" stack=true %}
 
 {% include chamfer/fidelity-density.liquid %}
 
-{% include chamfer/fidelity-density.liquid data="chamfer_coverage_density" images="/assets/chamfer-coverage/" note="Each row: the real image whose distance is closest to the marker, and the model's generated sample nearest to it." %}
+{% include chamfer/fidelity-density.liquid data="coverage_density" images="/assets/img/chamfer/coverage/" note="Each row: the real image whose distance is closest to the marker, and the model's generated sample nearest to it." %}
 
 {% comment %}
 Code and a full write-up are coming soon.

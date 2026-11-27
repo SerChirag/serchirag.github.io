@@ -6,7 +6,7 @@ shows its generated samples closest to and farthest from the real images. This
 script copies those samples from the export into the folders the chart reads.
 Re-run it whenever the export changes; never edit the outputs by hand.
 
-    python3 bin/chamfer_samples.py ~/Downloads/cosine_k1_selected
+    python3 bin/chamfer/samples.py ~/Downloads/cosine_k1_selected
 
 Reads one folder per model, named as in FOLDERS below, holding
   best_<rank>_idx<n>.webp    the samples closest to the real images
@@ -14,11 +14,11 @@ Reads one folder per model, named as in FOLDERS below, holding
 where a lower rank is closer (best) or farther (worst).
 
 Writes, in rank order:
-  assets/chamfer-samples/<model id>/closest-01.webp, closest-02.webp, ...
-  assets/chamfer-samples/<model id>/farthest-01.webp, farthest-02.webp, ...
+  assets/img/chamfer/samples/<model id>/closest-01.webp, closest-02.webp, ...
+  assets/img/chamfer/samples/<model id>/farthest-01.webp, farthest-02.webp, ...
 
-assets/chamfer-samples/ is emptied first. The images are copied as they are.
-Model ids are those in _data/chamfer_models.json; a folder not listed in
+assets/img/chamfer/samples/ is emptied first. The images are copied as they are.
+Model ids are those in _data/chamfer/models.json; a folder not listed in
 FOLDERS is skipped, and a model with no folder shows "coming soon".
 """
 
@@ -28,8 +28,8 @@ import re
 import shutil
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-OUT = ROOT / "assets" / "chamfer-samples"
+ROOT = Path(__file__).resolve().parents[2]
+OUT = ROOT / "assets" / "img" / "chamfer" / "samples"
 FILE = re.compile(r"^(best|worst)_(\d+)_idx\d+\.webp$")
 SIDES = {"best": "closest", "worst": "farthest"}
 # The export's folder for each model in the paper's table.
@@ -74,10 +74,10 @@ def main():
     parser.add_argument("export", type=Path, help="the folder holding one folder per model")
     src = parser.parse_args().export
 
-    ids = {m["id"] for m in json.loads((ROOT / "_data" / "chamfer_models.json").read_text())["models"]}
+    ids = {m["id"] for m in json.loads((ROOT / "_data" / "chamfer" / "models.json").read_text())["models"]}
     unknown = sorted(set(FOLDERS.values()) - ids)
     if unknown:
-        raise SystemExit(f"Not in _data/chamfer_models.json: {', '.join(unknown)}")
+        raise SystemExit(f"Not in _data/chamfer/models.json: {', '.join(unknown)}")
 
     if OUT.exists():
         shutil.rmtree(OUT)

@@ -2,10 +2,10 @@
 """Turn the paper's model benchmark table into the Chamfer chart's data.
 
 Reads the LaTeX table (by default the one labelled tab:TODO-cos) and
-writes _data/chamfer_models.json, which the ranking chart on the Chamfer page
+writes _data/chamfer/models.json, which the ranking chart on the Chamfer page
 draws from. Re-run it whenever the table changes; never edit the JSON by hand.
 
-    python3 bin/chamfer_table_to_json.py ~/Desktop/Chamfer/Chamfer-Overleaf/sections/benchmark.tex
+    python3 bin/chamfer/table_to_json.py ~/Desktop/Chamfer/Chamfer-Overleaf/sections/benchmark.tex
 
 What it takes from the table:
   - each row's mean (the first argument of \\meanstd{mean}{std}, or a plain
@@ -16,8 +16,8 @@ What it takes from the table:
   - the family, from the italic heading above the rows (\\multicolumn{...}{\\textit{GANs}}),
     without its citation
 
-The id of a model (used for its samples folder, assets/chamfer-samples/<id>/,
-and in _data/chamfer_chart.yml) is its name in lowercase with every run of
+The id of a model (used for its samples folder, assets/img/chamfer/samples/<id>/,
+and in _data/chamfer/chart.yml) is its name in lowercase with every run of
 other characters turned into "-": "DiT-XL/2 (250 steps)" -> "dit-xl-2-250-steps".
 
 The columns are read in the order of COLUMNS below; change it if the table's
@@ -42,7 +42,7 @@ COLUMNS = [
     ("fid", False),
 ]
 
-OUT = Path(__file__).resolve().parent.parent / "_data" / "chamfer_models.json"
+OUT = Path(__file__).resolve().parents[2] / "_data" / "chamfer" / "models.json"
 
 
 def slug(text):
@@ -142,7 +142,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("tex", type=Path, help="the .tex file with the table")
     parser.add_argument("--label", default="tab:TODO-cos", help="the table's \\label (default: %(default)s)")
-    parser.add_argument("--out", type=Path, default=OUT, help="where to write the JSON (default: _data/chamfer_models.json)")
+    parser.add_argument("--out", type=Path, default=OUT, help="where to write the JSON (default: _data/chamfer/models.json)")
     args = parser.parse_args()
 
     models = parse(args.tex.read_text(encoding="utf-8"), args.label)

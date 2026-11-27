@@ -5,16 +5,16 @@
   axis picks a distance, and the square grid beside the chart shows the sample
   nearest to it: for Figure 11 (Chamfer-Fidelity) each model's generated
   sample; for Figure 12 (Chamfer-Coverage) a real image and the model's sample
-  nearest to it. The whole box is sized to fit the window. Drawn by assets/js/chamfer-fidelity-density.js.
+  nearest to it. The whole box is sized to fit the window. Drawn by assets/js/chamfer/fidelity-density.js.
 
   Parameters, all optional:
-    data     the _data file to draw (default chamfer_fidelity_density). Each
+    data     the file in _data/chamfer/ to draw (default fidelity_density). Each
              sample has `d` and `file`; samples with `real` too are shown as pairs.
-             bin/chamfer_figure_data.py writes these files from the paper's export.
+             bin/chamfer/figure_data.py writes these files from the paper's export.
              A file with `classes` (each an id, a name and its own `models`, the
              same models in each) gets a dropdown to pick the class.
     images   the folder that `file` and `real` are relative to
-             (default /assets/chamfer-fidelity/)
+             (default /assets/img/chamfer/fidelity/)
     note     the line above the grid
     stack    the images in one column beside the chart, one above the
              other, so the chart can be wider and shorter (for two models)
@@ -24,8 +24,8 @@
   page, however many of these the page has. The frame, the dropdown and its
   label come from chamfer/controls.liquid.
 {%- endcomment -%}
-{%- assign cfd_data = include.data | default: 'chamfer_fidelity_density' -%}
-{%- assign cfd_images = include.images | default: '/assets/chamfer-fidelity/' -%}
+{%- assign cfd_data = include.data | default: 'fidelity_density' -%}
+{%- assign cfd_images = include.images | default: '/assets/img/chamfer/fidelity/' -%}
 {%- assign cfd_note = include.note | default: 'For each model, the generated image whose distance is closest to the marker.' -%}
 {% include chamfer/controls.liquid %}
 {%- unless cfd_assets_added %}
@@ -250,7 +250,7 @@
   </div>
   <script type="application/json" class="cfd-data">
     {
-      "data": {{ site.data[cfd_data] | jsonify }},
+      "data": {{ site.data.chamfer[cfd_data] | jsonify }},
       "images": {{ cfd_images | relative_url | jsonify }}
     }
   </script>
@@ -259,6 +259,6 @@
   <div class="caption ch-caption">{{ include.caption }}</div>
 {%- endif %}
 {%- unless cfd_assets_added %}
-  <script defer src="{{ '/assets/js/chamfer-fidelity-density.js' | relative_url }}"></script>
+  <script defer src="{{ '/assets/js/chamfer/fidelity-density.js' | relative_url }}"></script>
   {%- assign cfd_assets_added = true -%}
 {%- endunless %}

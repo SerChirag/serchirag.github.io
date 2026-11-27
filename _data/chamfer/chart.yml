@@ -1,6 +1,6 @@
 # Settings for the ranking chart on the Chamfer page
 # (_includes/chamfer/ranking-chart.liquid). The numbers themselves come from
-# _data/chamfer_models.json, which bin/chamfer_table_to_json.py writes from the
+# _data/chamfer/models.json, which bin/chamfer/table_to_json.py writes from the
 # paper's table; ids below are the ones that script prints.
 
 # One entry per family heading in the table, in the order the filters list them.

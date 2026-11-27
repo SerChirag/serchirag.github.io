@@ -356,5 +356,5 @@
     ]
   },
   "x_max": 18,
-  "source": "Figures 6 and 7 of the paper (Chamfer-Overleaf/figures/{precision,recall}_figure): IMM-XL (8 steps) against ImageNet-1K, distances in Inception-v3 feature space; loaded by bin/chamfer_nn_examples.py"
+  "source": "Figures 6 and 7 of the paper (Chamfer-Overleaf/figures/{precision,recall}_figure): IMM-XL (8 steps) against ImageNet-1K, distances in Inception-v3 feature space; loaded by bin/chamfer/nn_examples.py"
 }

@@ -1,7 +1,7 @@
 // Per-sample distances, model by model: the paper's Figures 11 (Chamfer-Fidelity)
 // and 12 (Chamfer-Coverage), interactive.
 // Markup and styles: _includes/chamfer/fidelity-density.liquid.
-// Data: _data/chamfer_fidelity_density.json, _data/chamfer_coverage_density.json.
+// Data: _data/chamfer/fidelity_density.json, _data/chamfer/coverage_density.json.
 //
 // A fixed-size marker on the distance axis picks a distance; each model shows
 // the sample whose distance is nearest to it (a nearest-neighbour search over
