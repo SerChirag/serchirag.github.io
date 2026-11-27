@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Turn the paper's model benchmark table into the Chamfer chart's data.
 
-Reads the LaTeX table (by default the one labelled tab:100k-combined) and
+Reads the LaTeX table (by default the one labelled tab:TODO-cos) and
 writes _data/chamfer_models.json, which the ranking chart on the Chamfer page
 draws from. Re-run it whenever the table changes; never edit the JSON by hand.
 
-    python3 bin/chamfer_table_to_json.py ~/Desktop/Chamfer/Chamfer-Overleaf/sections/experiments.tex
+    python3 bin/chamfer_table_to_json.py ~/Desktop/Chamfer/Chamfer-Overleaf/sections/benchmark.tex
 
 What it takes from the table:
   - each row's mean (the first argument of \\meanstd{mean}{std}, or a plain
@@ -13,7 +13,8 @@ What it takes from the table:
   - the model name, with citations, struts and "cfg = 1.5" removed; rows that
     end up with the same name (DiT-XL/2 at 50, 125 and 250 steps) get their
     NFE added, as "(250 steps)"
-  - the family, from the italic heading above the rows (\\multicolumn{...}{\\textit{GANs}})
+  - the family, from the italic heading above the rows (\\multicolumn{...}{\\textit{GANs}}),
+    without its citation
 
 The id of a model (used for its samples folder, assets/chamfer-samples/<id>/,
 and in _data/chamfer_chart.yml) is its name in lowercase with every run of
@@ -56,6 +57,7 @@ def strip_comment(line):
 
 def table_body(tex, label):
     """The lines of the tabular holding \\label{label}, between \\toprule and \\bottomrule."""
+    tex = "\n".join(strip_comment(line) for line in tex.splitlines())  # so a commented-out copy is never found
     at = tex.find(f"\\label{{{label}}}")
     if at < 0:
         sys.exit(f"No \\label{{{label}}} found.")
@@ -63,7 +65,7 @@ def table_body(tex, label):
     end = tex.find("\\end{tabular}", start)
     if start < 0 or end < 0:
         sys.exit(f"No tabular found after \\label{{{label}}}.")
-    lines = [strip_comment(line) for line in tex[start:end].splitlines()]
+    lines = tex[start:end].splitlines()
     top = next(i for i, line in enumerate(lines) if "\\midrule" in line)  # rows start after the header's rule
     return lines[top + 1 :]
 
@@ -74,7 +76,7 @@ def rows(lines):
     for line in lines:
         if "\\bottomrule" in line:
             break
-        if re.match(r"\s*\\(mid|top|bottom|c)rule", line):
+        if re.match(r"\s*\\(mid|top|bottom|c|fam)rule", line):  # \famrule: the faint line between model lines
             continue
         row += " " + line.strip()
         if "\\\\" in row:
@@ -108,7 +110,8 @@ def parse(tex, label):
     family = None
     for row in rows(table_body(tex, label)):
         cells = [c.strip() for c in row.split("&")]
-        heading = re.search(r"\\multicolumn\{[^}]*\}\{[^}]*\}\{\\textit\{([^}]*)\}\}", cells[0])
+        bare = re.sub(r"\s*~?\\cite[pt]?\{[^}]*\}", "", cells[0])
+        heading = re.search(r"\\multicolumn\{[^}]*\}\{[^}]*\}\{\\textit\{([^}]*)\}\}", bare)
         if heading:
             family = heading.group(1).strip()
             continue
@@ -138,7 +141,7 @@ def parse(tex, label):
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("tex", type=Path, help="the .tex file with the table")
-    parser.add_argument("--label", default="tab:100k-combined", help="the table's \\label (default: %(default)s)")
+    parser.add_argument("--label", default="tab:TODO-cos", help="the table's \\label (default: %(default)s)")
     parser.add_argument("--out", type=Path, default=OUT, help="where to write the JSON (default: _data/chamfer_models.json)")
     args = parser.parse_args()
 

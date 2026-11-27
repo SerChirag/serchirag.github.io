@@ -1,15 +1,17 @@
 // Ranking chart for the Chamfer page: the paper's Figure 9 made interactive.
-// One bubble per model, Chamfer-Fidelity across and Chamfer-Coverage up on the
-// same scale (lower is better on both), bubble area for the parameter count.
+// One bubble per model, Chamfer-Coverage across and Chamfer-Fidelity up, each
+// axis on its own scale (lower is better on both), bubble area for the parameter
+// count, colour for the model's line as in the paper. The chart stands tall, as
+// in the paper, with the filters and the panel beside it.
 // The numbers come from _data/chamfer_models.json (written from the paper's
-// table by bin/chamfer_table_to_json.py), the families and first view from
-// _data/chamfer_chart.yml. Nothing here assumes a range of values: the axes fit
+// table by bin/chamfer_table_to_json.py), the families, colours and first view
+// from _data/chamfer_chart.yml. Nothing here assumes a range of values: the axes fit
 // whatever the table holds.
 //
-// Filters above pick the models and the view fits them. Inside the chart,
-// Ctrl/Cmd + scroll or a pinch zooms, dragging pans, and the buttons above it
-// zoom and reset. The chart is sized to fit the window. Hovering a model
-// (tapping, on a touch screen) fills the panel beside the chart with its scores
+// The filters pick the models and the view fits them. Inside the chart,
+// Ctrl/Cmd + scroll or a pinch zooms, dragging pans, and the buttons in its
+// corner zoom and reset. The chart is sized to fit the window. Hovering a model
+// (tapping, on a touch screen) fills the panel under the filters with its scores
 // and its samples closest to and farthest from the real images. Samples are fetched only then, only for that
 // model, and only as they scroll into view; clicking keeps a model in the panel.
 (() => {
@@ -21,6 +23,12 @@
   const MAX_ZOOM = 25; // how far in from the fitted view
   const DRAG = 4; // px the pointer moves before a press becomes a pan
   const M = { top: 12, right: 12, bottom: 46, left: 50 }; // plot margins, in px
+  // Samples in the panel, in px. Each side is a strip that scrolls sideways.
+  // Beside the chart, the strips share the room under the filters and fill it:
+  // two rows if that keeps samples at least `two` across, else one, never above
+  // `max`. Under the chart, one row of `under` (`small` on a phone). `gap` and
+  // `scrollbar` match the CSS.
+  const TILE = { two: 100, max: 180, under: 104, small: 88, gap: 4, scrollbar: 10 };
   const SAMPLE = /\/assets\/chamfer-samples\/([^/]+)\/(closest|farthest)-(\d+)\.(webp|avif|jpe?g|png)$/i;
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const coarse = window.matchMedia("(pointer: coarse)");
@@ -59,16 +67,17 @@
     const byId = new Map(models.map((m) => [m.id, m]));
 
     // Families: those set in chamfer_chart.yml, in that order, then any other
-    // heading the table has (drawn as rings until it is given a mark).
+    // heading the table has.
     const configured = new Map((data.families || []).map((f) => [f.id, f]));
     const familyIds = [...new Set([...configured.keys(), ...models.map((m) => m.family)])].filter((id) => models.some((m) => m.family === id));
     const families = familyIds.map((id) => {
       const name = models.find((m) => m.family === id).family_name || id;
-      const f = configured.get(id) || {};
-      return { id, name, short: f.short || name, mark: f.mark || "ring" };
+      return { id, name, short: (configured.get(id) || {}).short || name };
     });
-    const familyOf = new Map(families.map((f) => [f.id, f]));
-    const markOf = (m) => familyOf.get(m.family).mark;
+    // Colours, as in the paper: a model takes the colour of the first entry in
+    // chamfer_chart.yml whose text its name contains, or grey if none does.
+    const colorOf = new Map(models.map((m) => [m.id, ((data.colors || []).find((c) => m.name.includes(c.match)) || {}).color || "#9e9e9e"]));
+    const paint = (node, color) => node.style.setProperty("--rk-c", color);
 
     // Samples, from the files under assets/chamfer-samples/<id>/.
     const samples = new Map();
@@ -79,6 +88,8 @@
       samples.get(match[1])[match[2].toLowerCase()].push({ n: +match[3], url: (data.base || "") + path });
     });
     samples.forEach((s) => ["closest", "farthest"].forEach((k) => s[k].sort((a, b) => a.n - b.n)));
+    // Empty tiles shown before a model is chosen: as many as a model has, so the panel keeps its layout.
+    const perSide = Math.max(0, ...[...samples.values()].flatMap((s) => [s.closest.length, s.farthest.length])) || 12;
 
     // The smallest range the fitted view shows: a share of the whole table's spread.
     const spread = (key) => Math.max(...models.map((m) => m[key])) - Math.min(...models.map((m) => m[key]));
@@ -98,7 +109,8 @@
       const chip = el("button", "rk-chip ch-btn", familiesEl);
       chip.type = "button";
       chip.title = f.name;
-      el("span", "rk-key", chip).dataset.mark = f.mark;
+      const keys = el("span", "rk-keys", chip);
+      new Set(models.filter((m) => m.family === f.id).map((m) => colorOf.get(m.id))).forEach((c) => paint(el("span", "rk-key", keys), c));
       el("span", null, chip, f.short);
       chip.addEventListener("click", () => {
         const ids = models.filter((m) => m.family === f.id).map((m) => m.id);
@@ -127,7 +139,7 @@
             else state.selected.delete(m.id);
             changed();
           });
-          el("span", "rk-key", label).dataset.mark = f.mark;
+          paint(el("span", "rk-key", label), colorOf.get(m.id));
           el("span", null, label, m.name);
           boxes.set(m.id, box);
         });
@@ -161,7 +173,7 @@
 
     const plot = root.querySelector(".rk-plot");
     const panel = root.querySelector(".rk-panel");
-    const chart = svg("svg", { class: "rk-svg", role: "group", "aria-label": "Chamfer-Fidelity and Chamfer-Coverage of each model" }, plot);
+    const chart = svg("svg", { class: "rk-svg", role: "group", "aria-label": "Chamfer-Coverage and Chamfer-Fidelity of each model" }, plot);
     const clipId = `rk-clip-${Math.random().toString(36).slice(2, 8)}`;
     const clipRect = svg("rect", {}, svg("clipPath", { id: clipId }, svg("defs", {}, chart)));
     const gridG = svg("g", { class: "rk-grid", "aria-hidden": "true" }, chart);
@@ -186,21 +198,22 @@
     zoomButton("+", "Zoom in", () => goTo(zoomed(view, M.left + PW / 2, M.top + PH / 2, 1 / ZOOM_STEP), true));
     zoomButton("−", "Zoom out", () => goTo(zoomed(view, M.left + PW / 2, M.top + PH / 2, ZOOM_STEP), true));
     const resetButton = zoomButton("Reset", "Reset the view", () => goTo(home, true));
+    el("span", "rk-zoom-hint", zoomEl, coarse.matches ? "Pinch to zoom" : "Ctrl/⌘ + scroll to zoom");
 
     const emptyEl = el("div", "rk-empty", plot, "No models selected.");
 
     const dots = new Map();
     models.forEach((m) => {
-      const mark = markOf(m);
-      const square = mark === "square";
-      const g = svg("g", { class: "rk-dot rk-off", "data-mark": mark, tabindex: "-1", role: "button" }, dotsG);
-      g.setAttribute("aria-label", `${m.name}: Chamfer-Fidelity ${fmt(m.chamfer_fid)}, Chamfer-Coverage ${fmt(m.chamfer_cov)}`);
+      const g = svg("g", { class: "rk-dot rk-off", tabindex: "-1", role: "button" }, dotsG);
+      paint(g, colorOf.get(m.id));
+      g.setAttribute("aria-label", `${m.name}: Chamfer-Coverage ${fmt(m.chamfer_cov)}, Chamfer-Fidelity ${fmt(m.chamfer_fid)}`);
       if (m.params == null) g.classList.add("rk-unknown"); // no parameter count: a dashed bubble of middling size
-      const shape = svg(square ? "rect" : "circle", { class: "rk-mark" }, g);
-      const ring = svg(square ? "rect" : "circle", { class: "rk-ring" }, g);
+      const shape = svg("circle", { class: "rk-mark" }, g);
+      const ring = svg("circle", { class: "rk-ring" }, g);
       const leader = svg("line", { class: "rk-leader rk-hidden" }, leadersG);
       const label = svg("text", { class: "rk-label rk-hidden", "dominant-baseline": "central" }, labelsG);
       label.textContent = m.name;
+      paint(label, colorOf.get(m.id));
       g.addEventListener("focus", () => hover(m.id));
       g.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
@@ -208,39 +221,41 @@
           togglePin(m.id);
         }
       });
-      dots.set(m.id, { m, g, shape, ring, label, leader, square, x: 0, y: 0, r: 0, placed: false, far: false, fallback: null });
+      dots.set(m.id, { m, g, shape, ring, label, leader, x: 0, y: 0, r: 0, placed: false, far: false, fallback: null });
     });
 
     let W = 0; // chart width and height, in px
     let H = 0;
     let PW = 0; // plot area
     let PH = 0;
-    let view = null; // { x0, y0, upp }: the values at the plot's bottom-left corner, and units per px
+    let view = null; // { x0, y0, ux, uy }: the values at the plot's bottom-left corner, and units per px across and up
     let home = null; // the view that fits the chosen models
     let frame = 0;
     let labelFrame = 0;
     let rScale = 1;
     const radius = (m) => Math.max(4.5, rScale * Math.sqrt(m.params == null ? 500 : m.params));
-    const toX = (v, d) => M.left + (v - d.x0) / d.upp;
-    const toY = (v, d) => M.top + PH - (v - d.y0) / d.upp;
+    const toX = (v, d) => M.left + (v - d.x0) / d.ux;
+    const toY = (v, d) => M.top + PH - (v - d.y0) / d.uy;
     const inPlot = (o) => o.x >= M.left && o.x <= M.left + PW && o.y >= M.top && o.y <= M.top + PH;
 
-    // As tall as the window allows below the row of controls: on a wide screen
-    // the panel sits beside the chart and takes its height; on a narrower one
-    // it sits under the chart and must fit too. On a phone, simply in proportion.
+    // The chart and the panel fit in the window together. On a wide screen the
+    // filters and the panel sit beside the chart and share its height, and the
+    // chart stands tall, as in the paper. On a narrower one the filters sit
+    // above it and the panel below, and the chart takes what they leave.
     const wide = window.matchMedia("(min-width: 860px)");
     function chartHeight() {
-      if (W < 480) return Math.round(W * 0.8);
       const nav = document.getElementById("navbar");
       const top = nav ? Math.max(0, nav.getBoundingClientRect().bottom) : 0;
-      const controls = root.querySelector(".rk-controls");
-      const above = controls.offsetHeight + parseFloat(getComputedStyle(controls).marginBottom);
-      const below = wide.matches ? 0 : panel.offsetHeight + 20;
+      const footer = document.querySelector("footer.fixed-bottom"); // a footer fixed to the window's foot covers it
+      const bottom = footer && getComputedStyle(footer).position === "fixed" ? footer.offsetHeight : 0;
       const style = getComputedStyle(root); // the frame round the chart
       const frame =
         parseFloat(style.paddingTop) + parseFloat(style.paddingBottom) + parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
-      const room = window.innerHeight - top - frame - above - below - 24;
-      return Math.round(Math.max(300, Math.min(W * (wide.matches ? 0.8 : 0.62), room)));
+      const room = window.innerHeight - top - bottom - frame - 16;
+      if (wide.matches) return Math.round(Math.max(420, Math.min(W * 1.6, room)));
+      const gap = parseFloat(getComputedStyle(root.querySelector(".rk-body")).rowGap);
+      const others = root.querySelector(".rk-controls").offsetHeight + panel.offsetHeight + 2 * gap;
+      return Math.round(Math.max(260, Math.min(W * 1.25, room - others)));
     }
 
     function measure() {
@@ -250,36 +265,30 @@
       PH = H - M.top - M.bottom;
       setAttrs(chart, { viewBox: `0 0 ${W} ${H}`, width: W, height: H });
       setAttrs(clipRect, { x: M.left, y: M.top, width: PW, height: PH });
-      rScale = ((Math.min(W, 640) / 560) * 22) / Math.sqrt(2000); // a 2B model gets a 22px radius at 560px wide
+      rScale = ((Math.min(Math.sqrt(W * H), 640) / 560) * 22) / Math.sqrt(2000); // a 2B model gets a 22px radius in a chart of 560 x 560px
       dots.forEach((d) => {
         d.r = radius(d.m);
-        if (d.square) {
-          const s = d.r * 0.89; // a square of the same area as the circle
-          const t = s + 3.5;
-          setAttrs(d.shape, { x: -s, y: -s, width: 2 * s, height: 2 * s, rx: 2 });
-          setAttrs(d.ring, { x: -t, y: -t, width: 2 * t, height: 2 * t, rx: 3 });
-        } else {
-          d.shape.setAttribute("r", d.r);
-          d.ring.setAttribute("r", d.r + 3.5);
-        }
+        d.shape.setAttribute("r", d.r);
+        d.ring.setAttribute("r", d.r + 3.5);
       });
       drawBetter();
     }
 
-    // The view that fits the chosen models, with both axes on the same scale.
+    // The view that fits the chosen models, each axis to their own range.
     function fit() {
       const shown = [...state.selected].map((id) => dots.get(id));
       if (!shown.length) return view;
-      const xs = shown.map((d) => d.m.chamfer_fid);
-      const ys = shown.map((d) => d.m.chamfer_cov);
+      const xs = shown.map((d) => d.m.chamfer_cov);
+      const ys = shown.map((d) => d.m.chamfer_fid);
       const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
       const inset = Math.max(...shown.map((d) => d.r)) + 14;
-      const upp = Math.max((x1 - x0) / (PW - 2 * inset), (y1 - y0) / (PH - 2 * inset), minSpan / (PW - 2 * inset)) * 1.04;
-      return { x0: (x0 + x1) / 2 - (upp * PW) / 2, y0: (y0 + y1) / 2 - (upp * PH) / 2, upp };
+      const ux = (Math.max(x1 - x0, minSpan) / (PW - 2 * inset)) * 1.04;
+      const uy = (Math.max(y1 - y0, minSpan) / (PH - 2 * inset)) * 1.04;
+      return { x0: (x0 + x1) / 2 - (ux * PW) / 2, y0: (y0 + y1) / 2 - (uy * PH) / 2, ux, uy };
     }
 
-    function ticks(lo, hi, upp) {
-      const step = niceStep(44 * upp); // at least 44px apart
+    function ticks(lo, hi, u) {
+      const step = niceStep(44 * u); // at least 44px apart
       const digits = Math.max(0, -Math.floor(Math.log10(step) + 1e-9));
       const out = [];
       for (let i = Math.ceil(lo / step); i * step <= hi + 1e-9 * step; i++) out.push({ v: i * step, text: (i * step).toFixed(digits) });
@@ -289,24 +298,24 @@
     function drawAxes(d) {
       gridG.textContent = "";
       axisG.textContent = "";
-      ticks(d.x0, d.x0 + d.upp * PW, d.upp).forEach(({ v, text }) => {
+      ticks(d.x0, d.x0 + d.ux * PW, d.ux).forEach(({ v, text }) => {
         const x = Math.round(toX(v, d)) + 0.5;
         svg("line", { x1: x, x2: x, y1: M.top, y2: M.top + PH }, gridG);
         svg("text", { x, y: M.top + PH + 16, "text-anchor": "middle" }, axisG).textContent = text;
       });
-      ticks(d.y0, d.y0 + d.upp * PH, d.upp).forEach(({ v, text }) => {
+      ticks(d.y0, d.y0 + d.uy * PH, d.uy).forEach(({ v, text }) => {
         const y = Math.round(toY(v, d)) + 0.5;
         svg("line", { x1: M.left, x2: M.left + PW, y1: y, y2: y }, gridG);
         svg("text", { x: M.left - 8, y, "text-anchor": "end", "dominant-baseline": "central" }, axisG).textContent = text;
       });
       svg("text", { class: "rk-title", x: M.left + PW / 2, y: H - 6, "text-anchor": "middle" }, axisG).textContent =
-        "Chamfer-Fidelity (lower is better)";
+        "Chamfer-Coverage (lower is better)";
       const yTitle = svg(
         "text",
         { class: "rk-title", x: 0, y: 0, "text-anchor": "middle", transform: `translate(12 ${M.top + PH / 2}) rotate(-90)` },
         axisG
       );
-      yTitle.textContent = "Chamfer-Coverage (lower is better)";
+      yTitle.textContent = "Chamfer-Fidelity (lower is better)";
     }
 
     function drawBetter() {
@@ -326,18 +335,13 @@
       ];
       svg("path", { d: `M${points.map((p) => p.join(",")).join("L")}Z` }, betterG);
       svg("text", { x, y: y - 8, "text-anchor": "end" }, betterG).textContent = "Better";
-      // How to zoom, in the bottom-right corner beside the axis title.
-      if (W >= 480) {
-        const hint = coarse.matches ? "Pinch to zoom" : "Ctrl/⌘ + scroll to zoom";
-        svg("text", { class: "rk-zoom-hint", x: W - M.right, y: H - 6, "text-anchor": "end" }, betterG).textContent = hint;
-      }
     }
 
     function draw(d) {
       drawAxes(d);
       dots.forEach((o) => {
-        o.x = toX(o.m.chamfer_fid, d);
-        o.y = toY(o.m.chamfer_cov, d);
+        o.x = toX(o.m.chamfer_cov, d);
+        o.y = toY(o.m.chamfer_fid, d);
         o.g.setAttribute("transform", `translate(${o.x.toFixed(1)} ${o.y.toFixed(1)})`);
       });
     }
@@ -423,16 +427,22 @@
 
     // ----- Zoom and pan --------------------------------------------------------
 
-    const clampUpp = (upp) => Math.min(home.upp * 1.5, Math.max(home.upp / MAX_ZOOM, upp));
-    // The view scaled by `f` about the point (px, py), which stays where it is.
+    // The view scaled by `f` about the point (px, py), which stays where it is;
+    // both axes keep their proportion, and the zoom stays within reach of the fitted view.
     function zoomed(base, px, py, f) {
-      const upp = clampUpp(base.upp * f);
-      const vx = base.x0 + (px - M.left) * base.upp;
-      const vy = base.y0 + (M.top + PH - py) * base.upp;
-      return { x0: vx - (px - M.left) * upp, y0: vy - (M.top + PH - py) * upp, upp };
+      const k = (Math.min(1.5, Math.max(1 / MAX_ZOOM, (base.ux * f) / home.ux)) * home.ux) / base.ux;
+      const [ux, uy] = [base.ux * k, base.uy * k];
+      const vx = base.x0 + (px - M.left) * base.ux;
+      const vy = base.y0 + (M.top + PH - py) * base.uy;
+      return { x0: vx - (px - M.left) * ux, y0: vy - (M.top + PH - py) * uy, ux, uy };
     }
+    const near = (a, b, tol) => Math.abs(a - b) < tol;
     const atHome = () =>
-      !home || (Math.abs(view.upp - home.upp) < home.upp * 1e-3 && Math.abs(view.x0 - home.x0) < home.upp && Math.abs(view.y0 - home.y0) < home.upp);
+      !home ||
+      (near(view.ux, home.ux, home.ux * 1e-3) &&
+        near(view.uy, home.uy, home.uy * 1e-3) &&
+        near(view.x0, home.x0, home.ux) &&
+        near(view.y0, home.y0, home.uy));
     const updateReset = () => {
       resetButton.disabled = atHome();
     };
@@ -466,7 +476,8 @@
       const step = (now) => {
         const t = Math.min(1, (now - start) / ANIM);
         const e = ease(t);
-        view = { x0: from.x0 + (target.x0 - from.x0) * e, y0: from.y0 + (target.y0 - from.y0) * e, upp: from.upp + (target.upp - from.upp) * e };
+        const mix = (k) => from[k] + (target[k] - from[k]) * e;
+        view = { x0: mix("x0"), y0: mix("y0"), ux: mix("ux"), uy: mix("uy") };
         draw(view);
         if (t < 1) frame = requestAnimationFrame(step);
         else {
@@ -524,7 +535,7 @@
         if (pinch && pointers.size === 2) {
           const now = pair();
           const next = zoomed(pinch.view, pinch.mid.x, pinch.mid.y, pinch.dist / now.dist);
-          setView({ ...next, x0: next.x0 - (now.mid.x - pinch.mid.x) * next.upp, y0: next.y0 + (now.mid.y - pinch.mid.y) * next.upp });
+          setView({ ...next, x0: next.x0 - (now.mid.x - pinch.mid.x) * next.ux, y0: next.y0 + (now.mid.y - pinch.mid.y) * next.uy });
           return;
         }
         if (drag && drag.id === e.pointerId) {
@@ -540,7 +551,7 @@
             chart.classList.add("rk-panning");
           }
           if (drag.moved) {
-            setView({ x0: drag.view.x0 - dx * drag.view.upp, y0: drag.view.y0 + dy * drag.view.upp, upp: drag.view.upp });
+            setView({ ...drag.view, x0: drag.view.x0 - dx * drag.view.ux, y0: drag.view.y0 + dy * drag.view.uy });
             return;
           }
         }
@@ -667,7 +678,7 @@
           return;
         }
         if (!m) {
-          for (let i = 0; i < 12; i++) el("div", "rk-thumb", strip);
+          for (let i = 0; i < perSide; i++) el("div", "rk-thumb", strip);
           return;
         }
         strip.tabIndex = 0;
@@ -713,7 +724,7 @@
     // two Chamfer scores.
     function renderInfo(info, m) {
       const head = el("div", "rk-head", info);
-      el("span", "rk-key", head).dataset.mark = markOf(m);
+      paint(el("span", "rk-key", head), colorOf.get(m.id));
       el("div", "rk-name", head, m.name);
       const meta = [m.params == null ? "params not reported" : paramsText(m.params), m.nfe == null ? null : `NFE ${m.nfe}`];
       el("div", "rk-meta", head, meta.filter(Boolean).join(" · "));
@@ -724,16 +735,24 @@
       ].forEach(([label, value]) => el("b", null, el("span", null, scores, label), fmt(value)));
     }
 
-    // One row of samples per strip, or two when the strips are tall enough;
-    // both strips get the same size of sample.
     function sizeStrips() {
       const strips = [...panel.querySelectorAll(".rk-strip:not(.rk-strip-soon)")];
-      // The strip's height less its bottom padding, which is the scrollbar's room.
-      const pad = strips.length ? parseFloat(getComputedStyle(strips[0]).paddingBottom) : 0;
-      const h = Math.min(...strips.map((strip) => strip.clientHeight)) - pad;
-      if (!strips.length || !h) return;
-      const rows = h >= 170 ? 2 : 1;
-      const size = Math.floor((h - (rows - 1) * 4) / rows);
+      if (!strips.length) return;
+      let rows = 1;
+      let size = plot.clientWidth < 480 ? TILE.small : TILE.under;
+      if (wide.matches) {
+        // Measured on the box that holds both sides, which fills the room whatever they hold.
+        const box = panel.querySelector(".rk-samples");
+        const sides = [...box.querySelectorAll(".rk-side")];
+        const headings = sides.reduce(
+          (t, side) => t + side.offsetHeight + parseFloat(getComputedStyle(side).marginTop) + parseFloat(getComputedStyle(side).marginBottom),
+          0
+        );
+        const h = (box.clientHeight - headings) / sides.length - TILE.scrollbar;
+        if (h <= 0) return;
+        rows = (h - TILE.gap) / 2 >= TILE.two ? 2 : 1;
+        size = Math.floor(Math.min(TILE.max, (h - (rows - 1) * TILE.gap) / rows));
+      }
       strips.forEach((strip) => {
         strip.style.setProperty("--rk-rows", rows);
         strip.style.setProperty("--rk-size", `${size}px`);
@@ -786,6 +805,7 @@
       const size = `${plot.clientWidth}x${window.innerHeight}`;
       if (size === lastSize) return;
       lastSize = size;
+      sizeStrips(); // under the chart, the panel's height is set first, and the chart takes the rest
       measure();
       home = fit() || home;
       goTo(home, false);

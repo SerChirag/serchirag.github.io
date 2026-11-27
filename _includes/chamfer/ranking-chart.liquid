@@ -1,39 +1,40 @@
 {%- comment -%}
-  Ranking chart: the paper's Figure 9 made interactive. Chamfer-Fidelity across,
-  Chamfer-Coverage up, one mark per model, filters above, zoom and pan inside,
-  and beside it a panel for the model being hovered (or tapped): its numbers and
-  its generated samples closest to and farthest from the real images, which are
-  only downloaded then.
+  Ranking chart: the paper's Figure 9 made interactive. Chamfer-Coverage across,
+  Chamfer-Fidelity up, each axis on its own scale, one bubble per model in its
+  colour from the paper, zoom and pan inside. Beside it, the filters and a panel
+  for the model being hovered (or tapped): its numbers and its generated samples
+  closest to and farthest from the real images, which are only downloaded then.
+  On narrow screens the filters go above the chart and the panel below it.
 
   The numbers come from _data/chamfer_models.json, written from the paper's
-  table by bin/chamfer_table_to_json.py; families, their marks and the models
+  table by bin/chamfer_table_to_json.py; families, colours and the models
   shown first are set in _data/chamfer_chart.yml. Samples are whatever images
   sit in assets/chamfer-samples/<model id>/ (closest-01.webp, ...,
-  farthest-01.webp, ...). Drawn by assets/js/chamfer-ranking-chart.js.
+  farthest-01.webp, ...), copied there by bin/chamfer_samples.py. Drawn by
+  assets/js/chamfer-ranking-chart.js.
   Pass caption="..." to put a caption under it. The frame, the filter chips,
   the Models menu and the zoom buttons come from chamfer/controls.liquid.
 {%- endcomment -%}
 {%- assign rk_samples = site.static_files | where_exp: 'f', "f.path contains '/assets/chamfer-samples/'" | map: 'path' -%}
 {% include chamfer/controls.liquid %}
 <style>
+  /* Each model's colour (--rk-c) is set on its marks by the script, from
+     _data/chamfer_chart.yml. Labels take a darker shade of it, as in the
+     paper, or a lighter one on a dark page. */
   .rk {
-    --rk-orange: #eb6834;
-    --rk-blue: #2a78d6;
-    --rk-green: #1baf7a;
-    --rk-square: #898781;
-    --rk-ring: var(--global-text-color-light);
     --rk-tint: rgba(0, 0, 0, 0.04);
+    --rk-ink: black;
+    --rk-ink-share: 38%;
   }
   html[data-theme='dark'] .rk {
-    --rk-orange: #d95926;
-    --rk-blue: #3987e5;
-    --rk-green: #199e70;
     --rk-tint: rgba(255, 255, 255, 0.06);
+    --rk-ink: white;
+    --rk-ink-share: 30%;
   }
-  /* A row of filters across the top; the chart and the panel side by side under it. */
+  /* The filters, a row of chips that wraps. */
   .rk-controls {
+    grid-area: controls;
     position: relative;
-    margin-bottom: 0.75rem;
   }
   .rk-filters {
     display: flex;
@@ -48,14 +49,15 @@
   .rk-chip[aria-pressed='false'] {
     color: var(--global-text-color-light);
   }
-  .rk-chip[aria-pressed='false'] .rk-key {
+  .rk-chip[aria-pressed='false'] .rk-keys {
     opacity: 0.35;
   }
   .rk-chip[aria-pressed='true'],
   .rk-chip[aria-pressed='mixed'] {
     border-color: var(--global-text-color-light);
   }
-  /* The menu opens under the whole row, from its left edge. */
+  /* The menu opens under the filters: from their left edge on narrow screens,
+     from their right edge (reaching over the chart) beside it. */
   body d-article .rk .rk-pick {
     position: static;
     display: block;
@@ -130,7 +132,7 @@
     border-top: 1px solid var(--global-divider-color);
   }
 
-  /* Family keys: the mark each family is drawn with. */
+  /* Keys: a model's colour, or on a family's chip the colours of its models, overlapping. */
   .rk-key {
     flex: none;
     width: 0.55rem;
@@ -138,47 +140,43 @@
     border-radius: 50%;
     background: var(--rk-c);
   }
-  .rk-key[data-mark='square'] {
-    border-radius: 2px;
+  .rk-keys {
+    display: inline-flex;
+    flex: none;
   }
-  .rk-key[data-mark='ring'] {
-    background: transparent;
-    box-shadow: inset 0 0 0 2px var(--rk-c);
-  }
-  [data-mark='orange'] {
-    --rk-c: var(--rk-orange);
-  }
-  [data-mark='blue'] {
-    --rk-c: var(--rk-blue);
-  }
-  [data-mark='green'] {
-    --rk-c: var(--rk-green);
-  }
-  [data-mark='square'] {
-    --rk-c: var(--rk-square);
-  }
-  [data-mark='ring'] {
-    --rk-c: var(--rk-ring);
+  .rk-keys .rk-key + .rk-key {
+    margin-left: -0.18rem;
+    box-shadow: 0 0 0 1.5px var(--global-bg-color);
   }
 
-  /* Chart and panel side by side, the panel as tall as the chart; stacked on
-     narrow screens. */
+  /* The chart on the left, as tall as the window allows; the filters and then
+     the panel on the right, the panel taking the rest of the chart's height.
+     Stacked on narrow screens: filters, chart, panel. */
   .rk-body {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 1.25rem;
+    grid-template-areas: 'controls' 'plot' 'panel';
+    gap: 1rem;
   }
   @media (min-width: 860px) {
     .rk-body {
-      grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
-      gap: 1.75rem;
+      grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr);
+      grid-template-areas: 'plot controls' 'plot panel';
+      gap: 1rem 1.5rem;
     }
     .rk-panel {
       contain: size;
       overflow: hidden;
     }
+    .rk-menu {
+      left: auto;
+      right: 0;
+      width: 34rem;
+    }
   }
   .rk-plot {
+    grid-area: plot;
     position: relative;
     min-width: 0;
   }
@@ -226,14 +224,9 @@
   }
   .rk-mark {
     fill: var(--rk-c);
+    fill-opacity: 0.85;
     stroke: var(--global-bg-color);
-    stroke-width: 2;
-  }
-  .rk-dot[data-mark='ring'] .rk-mark {
-    fill: var(--global-bg-color);
-    fill-opacity: 0.6;
-    stroke: var(--rk-c);
-    stroke-width: 2;
+    stroke-width: 1.5;
   }
   .rk-dot.rk-unknown .rk-mark {
     fill-opacity: 0.35;
@@ -253,8 +246,9 @@
     opacity: 1;
   }
   .rk-label {
-    fill: var(--global-text-color-light);
+    fill: color-mix(in srgb, var(--rk-c), var(--rk-ink) var(--rk-ink-share));
     font-size: 12px;
+    font-weight: 500;
     paint-order: stroke;
     stroke: var(--global-bg-color);
     stroke-width: 3px;
@@ -273,7 +267,7 @@
     transition: opacity 0.25s ease;
   }
   .rk-label.rk-active {
-    fill: var(--global-text-color);
+    font-weight: 700;
   }
   /* While the pointer is over the chart, everything but the model under it steps back. */
   .rk-svg.rk-hovering .rk-dot:not(.rk-active):not(.rk-off),
@@ -284,11 +278,14 @@
     position: absolute;
     z-index: 2;
     display: flex;
+    align-items: center;
     gap: 0.5rem;
   }
-  .rk-better .rk-zoom-hint {
-    font-size: 10.5px;
-    opacity: 0.85;
+  .rk-zoom-hint {
+    margin-left: 0.25rem;
+    font-size: 0.68rem;
+    white-space: nowrap;
+    color: var(--global-text-color-light);
   }
   /* Over the chart, so the grid does not show through. */
   .rk-zoom .ch-btn {
@@ -314,6 +311,7 @@
 
   /* Panel: the model under the pointer, with its samples. */
   .rk-panel {
+    grid-area: panel;
     display: flex;
     flex-direction: column;
     min-width: 0;
@@ -396,7 +394,7 @@
     grid-auto-columns: var(--rk-size, 88px);
     gap: 4px;
     box-sizing: border-box;
-    height: 98px;
+    height: calc(var(--rk-size, 88px) + 10px);
     min-height: 0;
     padding-bottom: 10px; /* the scrollbar's room, below the samples */
     overflow-x: auto;
@@ -459,16 +457,16 @@
 </style>
 
 <div class="rk ch-box l-page" data-ranking-chart>
-  <div class="rk-controls">
-    <div class="rk-filters" role="group" aria-label="Choose models">
-      <div class="rk-families"></div>
-      <details class="rk-pick ch-menu">
-        <summary class="ch-btn">Models</summary>
-        <div class="rk-menu"></div>
-      </details>
-    </div>
-  </div>
   <div class="rk-body">
+    <div class="rk-controls">
+      <div class="rk-filters" role="group" aria-label="Choose models">
+        <div class="rk-families"></div>
+        <details class="rk-pick ch-menu">
+          <summary class="ch-btn">Models</summary>
+          <div class="rk-menu"></div>
+        </details>
+      </div>
+    </div>
     <div class="rk-plot"></div>
     <div class="rk-panel" aria-live="polite"></div>
   </div>
@@ -476,6 +474,7 @@
     {
       "families": {{ site.data.chamfer_chart.families | jsonify }},
       "figure": {{ site.data.chamfer_chart.figure | jsonify }},
+      "colors": {{ site.data.chamfer_chart.colors | jsonify }},
       "models": {{ site.data.chamfer_models.models | jsonify }},
       "samples": {{ rk_samples | jsonify }},
       "base": {{ site.baseurl | jsonify }}

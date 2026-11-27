@@ -131,7 +131,7 @@ Still to write in the Chamfer section: the formulation (just give the formula).
 
 ## Benchmarking modern models
 
-{% include chamfer/ranking-chart.liquid caption="Chamfer-Fidelity and Chamfer-Coverage on ImageNet 256, from 100K generated samples and DINOv2-Giant features. Both axes use the same scale, lower is better on both, and marker area is proportional to the number of parameters. Hover over a model to see its samples; click to keep them in view." %}
+{% include chamfer/ranking-chart.liquid caption="Chamfer-Fidelity and Chamfer-Coverage on ImageNet 256, from 100K generated samples, computed with cosine distance on DINOv2-Giant features and multiplied by 100. Lower is better on both, and marker area is proportional to the number of parameters. Hover over a model to see its samples; click to keep them in view." %}
 
 ## Interpretability of Chamfer
 

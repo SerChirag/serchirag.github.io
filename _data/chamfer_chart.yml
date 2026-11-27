@@ -6,36 +6,62 @@
 # One entry per family heading in the table, in the order the filters list them.
 #   id     the heading as the script turns it into an id
 #   short  the name on the family's filter button
-#   mark   how its models are drawn: orange, blue or green (filled circles),
-#          square (grey squares) or ring (hollow circles)
 families:
   - id: diffusion-and-flow-matching
     short: Diffusion
-    mark: orange
   - id: few-step
     short: Few-step
-    mark: blue
   - id: autoregressive-and-masked
     short: Autoregressive
-    mark: green
   - id: gans
     short: GANs
-    mark: square
-  - id: fd-inception-and-fd-sim-variants
+  - id: fd-loss-variants
     short: FD variants
-    mark: ring
+
+# Each model's colour, as in the paper's Figure 9 (Chamfer/scripts/bubble_portrait.py):
+# a model takes the colour of the first entry whose text its name contains, so
+# "JiT-H + FD-loss (SIM)" is coloured as JiT. The last five lines are not in the
+# paper's figure; they take shades of the autoregressive pink.
+colors:
+  - { match: BigGAN, color: "#8D6E63" }
+  - { match: StyleGAN, color: "#8D6E63" }
+  - { match: DiT, color: "#FF9800" }
+  - { match: REPA, color: "#FBC02D" }
+  - { match: SiT, color: "#FBC02D" }
+  - { match: JiT, color: "#FF7043" }
+  - { match: IMM, color: "#42A5F5" }
+  - { match: iMF, color: "#26A69A" }
+  - { match: pMF, color: "#66BB6A" }
+  - { match: Drift, color: "#7E57C2" }
+  - { match: Priming, color: "#AB47BC" }
+  - { match: VAR, color: "#EC407A" }
+  - { match: LlamaGen, color: "#F48FB1" }
+  - { match: Open-MAGVIT2, color: "#D81B60" }
+  - { match: RandAR, color: "#E57373" }
+  - { match: RAR, color: "#AD1457" }
+  - { match: TiTok, color: "#880E4F" }
 
 # The models shown when the page opens, and under "Paper's Figure 9".
 figure:
-  - dit-xl-2-250-steps
-  - sit-xl-2
-  - sit-xl-2-repa
-  - jit-h-16
-  - imm-2-steps
+  - stylegan-xl
+  - drift-b
+  - imf-b-2
+  - drift-l
   - imm-4-steps
+  - imf-m-2
   - imm-8-steps
-  - imeanflow
-  - drifting-b
-  - drifting-l
+  - sit-xl-2
+  - imf-l-2
+  - dit-xl-2-50-steps
+  - imf-xl-2
+  - var-d20
   - priming-l
+  - pmf-h-16
+  - dit-xl-2-125-steps
   - var-d30
+  - dit-xl-2-250-steps
+  - pmf-h-fd-loss-inception
+  - jit-h-16
+  - sit-xl-2-repa
+  - jit-h-fd-loss-sim
+  - pmf-h-fd-loss-sim
